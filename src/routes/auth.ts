@@ -1,11 +1,14 @@
 import { Router } from "express";
-import { login, register, profile } from "../controllers/auth";
-import { authMiddleware } from "../middlewares/auth";
+import { Auth } from "../controllers/auth";
+import { Db } from "mongodb";
 
-const router = Router();
+export function auth(db: Db) {
+  const router = Router();
+  const controller = new Auth(db);
 
-router.post("/register", register);
-router.post("/login", login);
-router.get("/profile", authMiddleware, profile);
+  router.post("/register", controller.register);
+  router.post("/login", controller.login);
+  router.post("/refresh", controller.refresh);
 
-export default router;
+  return router;
+}
