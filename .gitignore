@@ -1,2 +1,13 @@
-node_modules
+# Ignore environment variables
 .env
+
+# Ignore node dependencies
+node_modules
+
+# Ignore logs and system files
+*.log
+.DS_Store
+
+# Ignore build outputs
+dist
+build
