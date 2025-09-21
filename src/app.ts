@@ -2,6 +2,8 @@ import express from "express";
 import authRoutes from "./routes/auth";
 import { connectDB } from "./utils/db";
 
+import { IAuthAccessToken } from "./models";
+
 // Connect to the database
 connectDB();
 
