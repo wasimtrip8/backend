@@ -1,5 +1,5 @@
-import { Schema, Document, Types } from "mongoose";
-import { TokenStatusType, VerificationType } from "./Enums";
+import mongoose, { Schema, Document, Types } from "mongoose";
+import { TokenStatusType, VerificationType } from "../types/enum";
 
 export interface IVerificationToken extends Document {
   platform_id: Types.ObjectId;
@@ -31,3 +31,5 @@ export const VerificationTokenSchema: Schema = new Schema(
   },
   { timestamps: true }
 );
+
+export default mongoose.model<IVerificationToken>("VerificationToken", VerificationTokenSchema);

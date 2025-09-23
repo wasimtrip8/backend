@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
-import { PlatformType, StatusType } from "./Enums";
+import { PlatformType, StatusType } from "../types/enum";
 
 export interface IAuthPlatform extends Document {
   name: string;

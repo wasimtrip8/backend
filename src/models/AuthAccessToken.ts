@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
-import { ProviderType, TokenStatusType } from "./Enums";
+import { ProviderType, TokenStatusType } from "../types/enum";
 
 export interface IAuthAccessToken extends Document {
   user_id: Types.ObjectId;

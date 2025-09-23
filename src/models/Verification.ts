@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
-import { TokenStatusType } from "./Enums";
+import { TokenStatusType } from "../types/enum";
 import { IVerificationToken, VerificationTokenSchema } from "./VerificationToken";
 
 export interface IVerification extends Document {

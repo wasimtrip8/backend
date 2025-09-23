@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
-import { UserRole, StatusType } from "./Enums";
+import { UserRole, StatusType } from "../types/enum";
 
 export interface IUser extends Document {
   creator?: Types.ObjectId;
@@ -20,7 +20,7 @@ export interface IUser extends Document {
   modified_at: Date;
 }
 
-const UserSchema: Schema = new Schema(
+const UserSchema: Schema<IUser> = new Schema(
   {
     creator: { type: Schema.Types.ObjectId, default: null },
     name: { type: String, required: true, unique: true, maxlength: 50, index: true },
