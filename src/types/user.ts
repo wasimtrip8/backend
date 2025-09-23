@@ -14,21 +14,18 @@ export enum UserStatus {
 }
 
 export interface User {
-  id: string;                // ObjectId as string
   creator?: string;          // ObjectId of creator (nullable)
   name: string;
-  mobile: string;
-  mobile_verified: boolean;
-  email: string;
-  email_verified: boolean;
+  mobile?: string;
+  mobile_verified?: boolean;
+  email?: string;
+  email_verified?: boolean;
   password?: string;         // hashed password (nullable if Google login)
   google_id?: string;        // if user registered with Google
-  is_verified: boolean;
+  is_verified?: boolean;
   picture?: string;
   role: UserRole;
   status: UserStatus;
   is_deleted: boolean;
   deleted_at?: Date | null;
-  created_at: Date;
-  modified_at: Date;
 }

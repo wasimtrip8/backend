@@ -23,8 +23,6 @@ export interface RefreshToken {
   ip_address?: string;
   provider: Provider;
   status: TokenStatus;
-  created_at: Date;
-  modified_at: Date;
 }
 
 export interface AccessToken {
@@ -38,6 +36,4 @@ export interface AccessToken {
   ip_address?: string;
   provider: Provider;
   status: TokenStatus;
-  created_at: Date;
-  modified_at: Date;
 }

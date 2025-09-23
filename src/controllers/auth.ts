@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { Db, ObjectId } from "mongodb";
 import bcrypt from "bcryptjs";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt";
+import { User, UserRole, UserStatus } from "../types/user";
+import { TokenStatus } from "../types/auth";
 
 export class Auth {
   private db: Db;
@@ -13,23 +15,20 @@ export class Auth {
   // User Registration
   register = async (req: Request, res: Response) => {
     try {
-      const { name, email, password, mobile } = req.body;
-
       const users = this.db.collection("users");
-      const existingUser = await users.findOne({ email });
+      const existingUser = await users.findOne(req.body.email);
       if (existingUser) return res.status(400).json({ error: "User already exists" });
 
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = await bcrypt.hash( req.body.password, 10);
 
-      const result = await users.insertOne({
-        name,
-        email,
-        mobile,
+      const user: User = {...req.body,
+        role: UserRole.USER,
         password: hashedPassword,
-        created_at: new Date(),
-        modified_at: new Date(),
-        status: "ACTIVE",
-      });
+        is_deleted: false,
+        status: UserStatus.ACTIVE,
+      }
+
+      const result = await users.insertOne( user );
 
       res.status(201).json({ message: "User registered", userId: result.insertedId });
     } catch (err) {
@@ -60,9 +59,7 @@ export class Auth {
         user_id: user._id,
         platform_id: new ObjectId(platform_id),
         refresh_token: refreshToken,
-        status: "ACTIVE",
-        created_at: new Date(),
-        modified_at: new Date(),
+        status: TokenStatus.ACTIVE
       });
 
       // Save access token
@@ -71,9 +68,7 @@ export class Auth {
         user_id: user._id,
         refresh_id: refreshResult.insertedId,
         access_token: accessToken,
-        status: "ACTIVE",
-        created_at: new Date(),
-        modified_at: new Date(),
+         status: TokenStatus.ACTIVE
       });
 
       res.json({ accessToken, refreshToken });
@@ -89,7 +84,7 @@ export class Auth {
       const { refreshToken } = req.body;
 
       const refreshTokens = this.db.collection("auth_refresh_tokens");
-      const stored = await refreshTokens.findOne({ refresh_token: refreshToken, status: "ACTIVE" });
+      const stored = await refreshTokens.findOne({ refresh_token: refreshToken, status: TokenStatus.ACTIVE });
       if (!stored) return res.status(401).json({ error: "Invalid refresh token" });
 
       const newAccessToken = generateAccessToken({ userId: stored.user_id });
@@ -99,9 +94,7 @@ export class Auth {
         user_id: stored.user_id,
         refresh_id: stored._id,
         access_token: newAccessToken,
-        status: "ACTIVE",
-        created_at: new Date(),
-        modified_at: new Date(),
+        status: TokenStatus.ACTIVE
       });
 
       res.json({ accessToken: newAccessToken });
