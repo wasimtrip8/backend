@@ -36,8 +36,7 @@ register = async (req: Request, res: Response) => {
 
       res.status(201).json({ message: "User registered", userId: user._id });
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({ error: "Internal server error", err });
     }
   };
 
@@ -73,8 +72,7 @@ register = async (req: Request, res: Response) => {
 
       res.json({ accessToken, refreshToken });
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({ error: "Internal server error", err });
     }
   };
 
@@ -97,12 +95,11 @@ register = async (req: Request, res: Response) => {
 
       res.json({ accessToken: newAccessToken });
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({ error: "Internal server error", err });
     }
   };
 
-  // ---------- OTP endpoints (new) ----------
+  // ---------- OTP endpoints ----------
   /**
    * POST /auth/otp/send
    * body: { mobile_email: string, platform_id?: string, verification_type?: string }
@@ -112,7 +109,6 @@ register = async (req: Request, res: Response) => {
       const { mobile_email, platform_id, verification_type } = req.body;
       if (!mobile_email) return res.status(400).json({ error: "mobile_email is required" });
 
-      // generate numeric 6-digit code and opaque token
       const code = Math.floor(100000 + Math.random() * 900000).toString(); 
       const token = crypto.randomBytes(32).toString("hex");
       const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
@@ -144,8 +140,7 @@ register = async (req: Request, res: Response) => {
 
       return res.status(200).json({ message: "OTP sent", sent: true, otp:code });
     } catch (err) {
-      console.error("sendOtp error:", err);
-      return res.status(500).json({ error: "Internal server error" });
+      return res.status(500).json({ error: "Internal server error", err });
     }
   };
 
@@ -232,8 +227,7 @@ verifyOtp = async (req: Request, res: Response) => {
       userId: user._id
     });
   } catch (err) {
-    console.error("verifyOtp error:", err);
-    return res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error", err });
   }
 };
 
@@ -269,8 +263,7 @@ verifyOtp = async (req: Request, res: Response) => {
 
       return res.status(200).json({ message: "OTP resent", otp: lastToken.code, resendAttempts: lastToken.resend_attempts });
     } catch (err) {
-      console.error("resendOtp error:", err);
-      return res.status(500).json({ error: "Internal server error" });
+      return res.status(500).json({ error: "Internal server error", err });
     }
   };
 
@@ -347,8 +340,7 @@ otpLogin = async (req: Request, res: Response) => {
       userId: user._id,
     });
   } catch (err) {
-    console.error("otpLogin error:", err);
-    return res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "OTP login error", err });
   }
 };
 

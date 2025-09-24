@@ -10,5 +10,9 @@ export function auth(db: Db) {
   router.post("/login", controller.login);
   router.post("/refresh", controller.refresh);
 
+  router.post("/otp/send", controller.sendOtp);      // send/request an OTP
+  router.post("/otp/verify", controller.verifyOtp);  // verify code
+  router.post("/otp/resend", controller.resendOtp);  // resend latest OTP
+
   return router;
 }

@@ -26,8 +26,6 @@ const AuthAccessTokenSchema: Schema = new Schema(
     ip_address: { type: String, maxlength: 40 },
     provider: { type: String, enum: Object.values(ProviderType), required: true },
     status: { type: String, enum: Object.values(TokenStatusType), required: true },
-    // created_at: { type: Date, default: Date.now },
-    // modified_at: { type: Date, default: Date.now },
   },
   { collection: "auth_access_tokens", timestamps: true }
 );
