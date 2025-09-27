@@ -18,8 +18,6 @@ export class MongoDBStorage {
     if (collections.length === 0) {
       console.log(`Creating collection: ${collectionName}`);
       await this.db.createCollection(collectionName);
-    } else {
-      console.log(`Collection already exists: ${collectionName}`);
     }
   }
 
@@ -28,7 +26,27 @@ export class MongoDBStorage {
     indexes: IndexDefinition[]
   ) {
     const collection = this.db.collection(collectionName);
+
+    // Fetch existing indexes
+    const existingIndexes = await collection.listIndexes().toArray();
+
     for (const idx of indexes) {
+      const alreadyExists = existingIndexes.some((ex) => {
+        // Compare key spec
+        const sameKeys =
+          JSON.stringify(ex.key) === JSON.stringify(idx.spec);
+
+        // Compare uniqueness if defined
+        const sameUnique =
+          (ex.unique || false) === (idx.options?.unique || false);
+
+        return sameKeys && sameUnique;
+      });
+
+      if (alreadyExists) {
+        continue;
+      }
+
       try {
         await collection.createIndex(idx.spec, idx.options);
         console.log(`Index created on ${collectionName}:`, idx.spec);
