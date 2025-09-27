@@ -1,13 +1,19 @@
-import mongoose from "mongoose";
+import { MongoClient, Db } from "mongodb";
 
-const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/trip8";
+let db: Db;
 
-export const connectDB = async () => {
-  try {
-    await mongoose.connect(MONGO_URI);
-    console.log("MongoDB connected");
-  } catch (err) {
-    console.error("MongoDB connection error:", err);
-    process.exit(1);
+export async function connectToDatabase(mongoUri: string, dbName: string): Promise<Db> {
+  if (db) return db; // reuse existing connection
+  const client = new MongoClient(mongoUri);
+  await client.connect();
+  db = client.db(dbName);
+  console.log(`✅ Connected to MongoDB: ${dbName}`);
+  return db;
+}
+
+export function getDb(): Db {
+  if (!db) {
+    throw new Error("❌ Database not connected. Call connectToDatabase first.");
   }
-};
+  return db;
+}

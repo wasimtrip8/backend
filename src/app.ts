@@ -1,11 +1,12 @@
 import express from "express";
-import {auth} from "./routes/auth";
+import { auth } from "./routes/auth";
 
 const app = express();
-
 app.use(express.json());
 
-// Routes
-app.use("/api/auth", auth);
+// Routes (db is injected later in server.ts)
+export function setupRoutes(db: any) {
+  app.use("/auth", auth(db));
+}
 
 export default app;

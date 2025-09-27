@@ -1,18 +1,17 @@
-import { Router } from "express";
+import express from "express";
+import { validate } from "../middlewares/validate";
 import { Auth } from "../controllers/auth";
-import { Db } from "mongodb";
+import { refreshValidator, sendOtpValidator, verifyOtpValidator, resendOtpValidator, otpLoginValidator } from "../validators/authValidator";
 
-export function auth(db: Db) {
-  const router = Router();
-  const controller = new Auth(db);
+export const auth = (db: any) => {
+  const router = express.Router();
+  const authController = new Auth(db);
 
-  router.post("/register", controller.register);
-  router.post("/login", controller.login);
-  router.post("/refresh", controller.refresh);
-
-  router.post("/otp/send", controller.sendOtp);      // send/request an OTP
-  router.post("/otp/verify", controller.verifyOtp);  // verify code
-  router.post("/otp/resend", controller.resendOtp);  // resend latest OTP
+  router.post("/refresh", refreshValidator, validate, authController.refresh);
+  router.post("/otp/send", sendOtpValidator, validate, authController.sendOtp);
+  router.post("/otp/verify", verifyOtpValidator, validate, authController.verifyOtp);
+  router.post("/otp/resend", resendOtpValidator, validate, authController.resendOtp);
+  router.post("/otp/login", otpLoginValidator, validate, authController.otpLogin);
 
   return router;
-}
+};

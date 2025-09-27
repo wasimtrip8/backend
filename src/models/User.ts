@@ -8,7 +8,6 @@ export interface IUser extends Document {
   mobile_verified: boolean;
   email: string;
   email_verified: boolean;
-  password: string;
   google_id?: string;
   is_verified: boolean;
   picture?: string;
@@ -28,7 +27,6 @@ const UserSchema: Schema<IUser> = new Schema(
     mobile_verified: { type: Boolean, default: false },
     email: { type: String, required: true, unique: true, maxlength: 100, index: true },
     email_verified: { type: Boolean, default: false },
-    password: { type: String, required: true },
     google_id: { type: String, maxlength: 255, default: null },
     is_verified: { type: Boolean, default: false },
     picture: { type: String, maxlength: 255 },

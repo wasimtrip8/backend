@@ -1,7 +1,6 @@
 //src/controllers/auth.ts
 import { Request, Response } from "express";
 import { Db, ObjectId } from "mongodb";
-import bcrypt from "bcryptjs";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt";
 import { UserRole, StatusType, TokenStatus, TokenStatusType, VerificationType } from "../types/enum";
 import { AuthAccessToken, User, Verification } from "../models";
@@ -17,64 +16,6 @@ export class Auth {
   constructor(db: Db) {
     this.db = db;
   }
-register = async (req: Request, res: Response) => {
-    try {
-      const existingUser = await User.findOne({ email: req.body.email });  // ✅ correct usage
-      if (existingUser) return res.status(400).json({ error: "User already exists" });
-
-      const hashedPassword = await bcrypt.hash(req.body.password, 10);
-
-      const user: IUser = new User({
-        ...req.body,
-        role: UserRole.USER,
-        password: hashedPassword,
-        is_deleted: false,
-        status: StatusType.ACTIVE,
-      });
-
-      await user.save();
-
-      res.status(201).json({ message: "User registered", userId: user._id });
-    } catch (err) {
-      res.status(500).json({ error: "Internal server error", err });
-    }
-  };
-
-  // Login
-  login = async (req: Request, res: Response) => {
-    try {
-      const { email, password, platform_id } = req.body;
-      const user = await User.findOne({ email });
-      if (!user) return res.status(404).json({ error: "User not found" });
-
-      const valid = await bcrypt.compare(password, user.password);
-      if (!valid) return res.status(401).json({ error: "Invalid credentials" });
-
-      // Generate tokens
-      const accessToken = generateAccessToken({ userId: user._id });
-      const refreshToken = generateRefreshToken({ userId: user._id });
-
-      // Save refresh token
-      const refreshResult: IAuthRefreshToken = await AuthRefreshToken.insertOne({
-        user_id: user._id,
-        platform_id: new ObjectId(platform_id),
-        refresh_token: refreshToken,
-        status: TokenStatus.ACTIVE
-      });
-
-      // Save access token
-      await AuthAccessToken.insertOne({
-        user_id: user._id,
-        refresh_id: refreshResult._id,
-        access_token: accessToken,
-        status: TokenStatus.ACTIVE
-      } as unknown as IAuthAccessToken);
-
-      res.json({ accessToken, refreshToken });
-    } catch (err) {
-      res.status(500).json({ error: "Internal server error", err });
-    }
-  };
 
   // Refresh Token
   refresh = async (req: Request, res: Response) => {
