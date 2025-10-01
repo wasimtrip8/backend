@@ -53,6 +53,7 @@ export enum TokenStatus {
   INACTIVE = "INACTIVE",
   SUSPENDED = "SUSPENDED",
   EXPIRED = "EXPIRED",
+  USED = "USED"
 }
 
 
