@@ -21,11 +21,11 @@ export class Auth {
   // Refresh Token
   refresh = async (req: Request, res: Response) => {
     try {
-      const { refreshToken } = req.body;
+      const { refresh_token } = req.body;
       const refreshTokensColl = this.db.collection<IAuthRefreshToken>("auth_refresh_tokens");
       const accessTokensColl = this.db.collection("auth_access_tokens");
 
-      const stored = await refreshTokensColl.findOne({ refresh_token: refreshToken, status: TokenStatus.ACTIVE });
+      const stored = await refreshTokensColl.findOne({ refresh_token: refresh_token, status: TokenStatus.ACTIVE });
       if (!stored) return res.status(401).json({ error: "Invalid refresh token" });
 
       const newAccessToken = generateAccessToken({ userId: stored.user_id });
@@ -261,7 +261,7 @@ export class Auth {
   // OTP Login (shortcut: send + verify in one flow)
   otpLogin = async (req: Request, res: Response) => {
     try {
-      const { mobile_email, code, platform_id, name, source } = req.body;
+      const { mobile_email, code, platform_id, name, source, google_id } = req.body;
       if (!mobile_email || !code) {
         return res.status(400).json({ error: "mobile_email and code are required" });
       }
@@ -310,8 +310,6 @@ export class Auth {
       if (!user) {
         const newUserDoc: Omit<IUser, "_id"> = {
           name: name || "Guest",
-          mobile: mobile_email,
-          email: mobile_email.includes("@") ? mobile_email : "",
           mobile_verified: true,
           email_verified: mobile_email.includes("@"),
           is_verified: true,
@@ -322,9 +320,11 @@ export class Auth {
           created_at: new Date(),
           modified_at: new Date(),
           picture: undefined,
-          google_id: undefined,
           creator: undefined,
           source: source || "",
+           ...(mobile_email && !mobile_email.includes("@") ? { mobile: mobile_email } : {}),
+  ...(mobile_email && mobile_email.includes("@") ? { email: mobile_email } : {}),
+  ...(google_id ? { google_id: google_id } : {}),
         };
 
         const insertResult = await userColl.insertOne(newUserDoc);

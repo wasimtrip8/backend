@@ -5,9 +5,9 @@ export interface IUser {
   _id?: ObjectId;
   creator?: ObjectId | null;
   name: string;
-  mobile: string;
+  mobile?: string;
   mobile_verified: boolean;
-  email: string;
+  email?: string;
   email_verified: boolean;
   google_id?: string | null;
   is_verified: boolean;

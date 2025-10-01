@@ -1,10 +1,10 @@
 import { body } from "express-validator";
 
 export const refreshValidator = [
-  body("refreshToken")
+  body("refresh_token")
     .isString()
     .notEmpty()
-    .withMessage("refreshToken is required"),
+    .withMessage("refresh_token is required"),
 ];
 
 export const sendOtpValidator = [
