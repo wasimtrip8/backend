@@ -22,13 +22,6 @@ export enum StatusType {
   SUSPENDED = "SUSPENDED",
 }
 
-export enum TokenStatusType {
-  ACTIVE = "ACTIVE",
-  INACTIVE = "INACTIVE",
-  SUSPENDED = "SUSPENDED",
-  EXPIRED = "EXPIRED",
-}
-
 export enum UserRole {
   MASTER = "MASTER",  // Super admin
   ADMIN = "ADMIN",

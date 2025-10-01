@@ -1,22 +1,30 @@
-import mongoose, { Schema, Document, Types } from "mongoose";
-import { TokenStatusType } from "../types/enum";
-import { IVerificationToken, VerificationTokenSchema } from "./VerificationToken";
+import { ObjectId } from "mongodb";
+import { TokenStatus } from "../types/enum";
+import { IVerificationToken } from "./VerificationToken";
 
-export interface IVerification extends Document {
+export interface IVerification {
+  _id?: ObjectId;
   mobile_email: string;
-  tokens: Types.DocumentArray<IVerificationToken>;
-  status: TokenStatusType;
-  created_at: Date;
-  modified_at: Date;
+  tokens: IVerificationToken[];
+  status: TokenStatus;
+  created_at?: Date;
+  modified_at?: Date;
 }
 
-const VerificationSchema: Schema = new Schema(
-  {
-    mobile_email: { type: String, maxlength: 100, required: true, unique: true, index: true },
-    tokens: { type: [VerificationTokenSchema], default: [] },
-    status: { type: String, enum: Object.values(TokenStatusType), required: true },
-  },
-  { collection: "verification", timestamps: true }
-);
+// Helper function to create a new verification object
+export function createVerification(params: Partial<IVerification>): IVerification {
+  const now = new Date();
+  return {
+    mobile_email: params.mobile_email!,
+    tokens: params.tokens || [],
+    status: params.status || TokenStatus.ACTIVE,
+    created_at: now,
+    modified_at: now,
+  };
+}
 
-export default mongoose.model<IVerification>("Verification", VerificationSchema);
+// Example usage with native MongoDB driver:
+// const db = getDb(); // your MongoDB database instance
+// const verificationCollection = db.collection<IVerification>("verification");
+// const verification = createVerification({ mobile_email: "user@example.com" });
+// await verificationCollection.insertOne(verification);

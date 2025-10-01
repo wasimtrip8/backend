@@ -1,41 +1,50 @@
-import mongoose, { Schema, Document, Types } from "mongoose";
+import { ObjectId } from "mongodb";
 import { UserRole, StatusType } from "../types/enum";
 
-export interface IUser extends Document {
-  creator?: Types.ObjectId;
+export interface IUser {
+  _id?: ObjectId;
+  creator?: ObjectId | null;
   name: string;
   mobile: string;
   mobile_verified: boolean;
   email: string;
   email_verified: boolean;
-  google_id?: string;
+  google_id?: string | null;
   is_verified: boolean;
   picture?: string;
   role: UserRole;
   status: StatusType;
   is_deleted: boolean;
-  deleted_at?: Date;
-  created_at: Date;
-  modified_at: Date;
+  deleted_at?: Date | null;
+  created_at?: Date;
+  modified_at?: Date;
+  source?: string;
 }
 
-const UserSchema: Schema<IUser> = new Schema(
-  {
-    creator: { type: Schema.Types.ObjectId, default: null },
-    name: { type: String, required: true, unique: true, maxlength: 50, index: true },
-    mobile: { type: String, required: true, unique: true, maxlength: 10, index: true },
-    mobile_verified: { type: Boolean, default: false },
-    email: { type: String, required: true, unique: true, maxlength: 100, index: true },
-    email_verified: { type: Boolean, default: false },
-    google_id: { type: String, maxlength: 255, default: null },
-    is_verified: { type: Boolean, default: false },
-    picture: { type: String, maxlength: 255 },
-    role: { type: String, enum: Object.values(UserRole), default: UserRole.USER },
-    status: { type: String, enum: Object.values(StatusType), default: StatusType.ACTIVE },
-    is_deleted: { type: Boolean, default: false },
-    deleted_at: { type: Date, default: null },
-  },
-  { timestamps: true }
-);
+// Helper function to create a new user object
+export function createUser(params: Partial<IUser>): IUser {
+  const now = new Date();
+  return {
+    creator: params.creator || null,
+    name: params.name!,
+    mobile: params.mobile!,
+    mobile_verified: params.mobile_verified || false,
+    email: params.email!,
+    email_verified: params.email_verified || false,
+    google_id: params.google_id || null,
+    is_verified: params.is_verified || false,
+    picture: params.picture,
+    role: params.role || UserRole.USER,
+    status: params.status || StatusType.ACTIVE,
+    is_deleted: params.is_deleted || false,
+    deleted_at: params.deleted_at || null,
+    created_at: now,
+    modified_at: now,
+  };
+}
 
-export default mongoose.model<IUser>("User", UserSchema);
+// Example usage with native MongoDB driver:
+// const db = getDb(); // your MongoDB database instance
+// const users = db.collection<IUser>("users");
+// const newUser = createUser({ name: "John Doe", mobile: "9876543210", email: "john@example.com" });
+// await users.insertOne(newUser);

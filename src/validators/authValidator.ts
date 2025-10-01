@@ -57,4 +57,12 @@ export const otpLoginValidator = [
     .optional()
     .isString()
     .withMessage("platform_id must be a string"),
+    body("name")
+    .optional()
+    .isString()
+    .withMessage("name must be a string"),
+  body("source")
+    .optional()
+    .isString()
+    .withMessage("source must be a string"),
 ];
