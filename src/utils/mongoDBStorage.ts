@@ -87,6 +87,7 @@ export class MongoDBStorage {
       verification: [
         { spec: { mobile_email: 1 }, options: { unique: true } },
       ],
+      trips: [],
     };
 
     for (const [name, indexes] of Object.entries(collections)) {

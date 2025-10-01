@@ -1,6 +1,6 @@
 import jwt, { SignOptions } from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
+const JWT_SECRET = process.env.JWT_SECRET ?? "secret123";
 
 export function generateAccessToken(payload: object, expiresIn: string = "15m") {
   const options: SignOptions = { expiresIn: expiresIn as SignOptions['expiresIn'] };
