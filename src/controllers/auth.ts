@@ -153,7 +153,7 @@ export class Auth {
 
       const verificationColl = this.db.collection<IVerification>("verification");
 
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      const code = Math.floor(1000 + Math.random() * 9000).toString();
       const token = crypto.randomBytes(32).toString("hex");
       const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
@@ -200,12 +200,12 @@ export class Auth {
   /** OTP login: verify + auto-create user + generate tokens */
   otpLogin = async (req: Request, res: Response) => {
     try {
-      const { mobile_email, code, platform_id, name, source, google_id } = req.body;
+      const { mobile_email, otp, platform_id, name, source, google_id } = req.body;
       const verificationColl = this.db.collection<IVerification>("verification");
       const verification = await verificationColl.findOne({ mobile_email });
       if (!verification) return res.status(404).json({ error: "No OTP request found" });
 
-      await this.validateOtp(verification, code);
+      await this.validateOtp(verification, otp);
 
       const user = await this.getOrCreateUser(mobile_email, name, source, google_id);
 

@@ -27,10 +27,10 @@ export const verifyOtpValidator = [
     .isString()
     .notEmpty()
     .withMessage("mobile_email is required"),
-  body("code")
+  body("otp")
     .isString()
     .notEmpty()
-    .withMessage("code is required"),
+    .withMessage("otp is required"),
   body("platform_id")
     .optional()
     .isString()
@@ -49,10 +49,10 @@ export const otpLoginValidator = [
     .isString()
     .notEmpty()
     .withMessage("mobile_email is required"),
-  body("code")
+  body("otp")
     .isString()
     .notEmpty()
-    .withMessage("code is required"),
+    .withMessage("otp is required"),
   body("platform_id")
     .optional()
     .isString()
