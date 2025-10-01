@@ -322,9 +322,9 @@ export class Auth {
           picture: undefined,
           creator: undefined,
           source: source || "",
-           ...(mobile_email && !mobile_email.includes("@") ? { mobile: mobile_email } : {}),
-  ...(mobile_email && mobile_email.includes("@") ? { email: mobile_email } : {}),
-  ...(google_id ? { google_id: google_id } : {}),
+          ...(mobile_email && !mobile_email.includes("@") ? { mobile: mobile_email } : {}),
+          ...(mobile_email && mobile_email.includes("@") ? { email: mobile_email } : {}),
+          ...(google_id ? { google_id: google_id } : {}),
         };
 
         const insertResult = await userColl.insertOne(newUserDoc);
