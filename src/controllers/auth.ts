@@ -3,13 +3,13 @@ import { Request, Response } from "express";
 import { Db, ObjectId, WithId } from "mongodb";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt";
 import { TokenStatus, VerificationType, ProviderType, StatusType, UserRole } from "../types/enum";
-import { IAuthRefreshToken } from "../models/AuthRefreshToken";
-import { IVerificationToken } from "../models/VerificationToken";
-import { IVerification } from "../models/Verification";
 import * as crypto from "crypto";
-import { IAuthAccessToken } from "../models/AuthAccessToken";
 import { REFRESH_TOKEN_EXPIRE_DAYS } from "../config/constants";
-import { IUser } from "../models/User";
+import { IVerificationToken } from "../models/verificationToken";
+import { IAuthAccessToken } from "../models/authAccessToken";
+import { IAuthRefreshToken } from "../models/authRefreshToken";
+import { IUser } from "../models/user";
+import { IVerification } from "../models/verification";
 
 export class Auth {
   private db: Db;

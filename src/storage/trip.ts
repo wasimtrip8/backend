@@ -26,9 +26,20 @@ export class TripStorage {
     );
   }
 
-  public async find(query: Partial<ITrip> = {}): Promise<WithId<ITrip>[]> {
-    return this.db.collection<ITrip>(this.collectionName).find(query).toArray();
+  async find(filter: any, options: { skip?: number; limit?: number; sort?: any } = {}) {
+    let cursor = await this.db.collection<ITrip>(this.collectionName).find(filter);
+
+    if (options.sort) cursor = cursor.sort(options.sort);
+    if (options.skip) cursor = cursor.skip(options.skip);
+    if (options.limit) cursor = cursor.limit(options.limit);
+
+    return cursor.toArray();
   }
+
+  async count(filter: Record<string, any> = {}): Promise<number> {
+    return await this.db.collection<ITrip>(this.collectionName).countDocuments(filter);
+  }
+
 
   public async findById(id: string | ObjectId): Promise<WithId<ITrip> | null> {
     const _id = typeof id === "string" ? new ObjectId(id) : id;

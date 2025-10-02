@@ -144,39 +144,3 @@ export interface ITrip {
   created_at?: Date;
   modified_at?: Date;
 }
-
-// Helper function
-export function createTrip(params: Partial<ITrip>): ITrip {
-  const now = new Date();
-  return {
-    creator: params.creator,
-    user_id: params.user_id,
-    starting: params.starting,
-    destination: params.destination,
-    days: params.days,
-    nights: params.nights,
-    banner: params.banner,
-    trip_info: params.trip_info,
-    itineraries: params.itineraries,
-    quotation_info: params.quotation_info,
-    price: params.price || 0,
-    pre_defined: params.pre_defined || false,
-    status: params.status || TripStatus.ACTIVE,
-    tags: params.tags || [],
-    total_views: params.total_views || 0,
-    is_deleted: params.is_deleted || false,
-    deleted_at: params.deleted_at,
-    created_at: now,
-    modified_at: now,
-  };
-}
-
-export function createItinerary(params: Partial<IItinerary>): IItinerary {
-  const now = new Date();
-  return {
-    location: params.location,
-    days: params.days || [],
-    created_at: now,
-    modified_at: now,
-  };
-}
