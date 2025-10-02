@@ -55,10 +55,13 @@ export class Auth {
     const userColl = this.db.collection<IUser>("users");
     let user = await userColl.findOne({ mobile: mobile_email }) || await userColl.findOne({ email: mobile_email });
 
-    if (!user && !role) {
-      throw new Error("Role is required if a new user is logging in");
-    }
+    if (!user && (!role && !name)) {
+      const missingFields: string[] = [];
+      if (!role) missingFields.push("role");
+      if (!name) missingFields.push("name");
 
+      throw new Error(`Missing required field(s): ${missingFields.join(", ")}`);
+    }
 
     if (!user) {
       const newUserDoc: Omit<IUser, "_id"> = {
