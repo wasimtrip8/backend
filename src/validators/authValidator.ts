@@ -1,4 +1,5 @@
 import { body } from "express-validator";
+import { UserRole } from "../types/enum";
 
 export const refreshValidator = [
   body("refresh_token")
@@ -53,11 +54,16 @@ export const otpLoginValidator = [
     .isString()
     .notEmpty()
     .withMessage("otp is required"),
+  body("role")
+    .optional()
+    .isString()
+    .isIn(Object.values(UserRole))
+    .withMessage(`role must be one of: ${Object.values(UserRole).join(", ")}`),
   body("platform_id")
     .optional()
     .isString()
     .withMessage("platform_id must be a string"),
-    body("name")
+  body("name")
     .optional()
     .isString()
     .withMessage("name must be a string"),

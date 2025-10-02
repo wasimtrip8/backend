@@ -10,6 +10,7 @@ import { IAuthAccessToken } from "../models/authAccessToken";
 import { IAuthRefreshToken } from "../models/authRefreshToken";
 import { IUser } from "../models/user";
 import { IVerification } from "../models/verification";
+import { error } from "console";
 
 export class Auth {
   private db: Db;
@@ -50,9 +51,14 @@ export class Auth {
 
 
   /** Helper: Get or create user */
-  private async getOrCreateUser(mobile_email: string, name?: string, source?: string, google_id?: string) {
+  private async getOrCreateUser(mobile_email: string, role?: UserRole, name?: string, source?: string, google_id?: string) {
     const userColl = this.db.collection<IUser>("users");
     let user = await userColl.findOne({ mobile: mobile_email }) || await userColl.findOne({ email: mobile_email });
+
+    if (!user && !role) {
+      throw new Error("Role is required if a new user is logging in");
+    }
+
 
     if (!user) {
       const newUserDoc: Omit<IUser, "_id"> = {
@@ -60,7 +66,7 @@ export class Auth {
         mobile_verified: true,
         email_verified: mobile_email.includes("@"),
         is_verified: true,
-        role: UserRole.USER,
+        role: role || UserRole.USER,
         status: StatusType.ACTIVE,
         is_deleted: false,
         deleted_at: undefined,
@@ -200,14 +206,14 @@ export class Auth {
   /** OTP login: verify + auto-create user + generate tokens */
   otpLogin = async (req: Request, res: Response) => {
     try {
-      const { mobile_email, otp, platform_id, name, source, google_id } = req.body;
+      const { mobile_email, otp, platform_id, name, source, google_id, role } = req.body;
       const verificationColl = this.db.collection<IVerification>("verification");
       const verification = await verificationColl.findOne({ mobile_email });
       if (!verification) return res.status(404).json({ error: "No OTP request found" });
 
       await this.validateOtp(verification, otp);
 
-      const user = await this.getOrCreateUser(mobile_email, name, source, google_id);
+      const user = await this.getOrCreateUser(mobile_email, role, name, source, google_id);
 
       const tokens = await this.createTokens(user, platform_id);
 
