@@ -18,6 +18,26 @@ export class TripStorage {
     return { ...data, _id: result.insertedId } as WithId<ITrip>;
   }
 
+  public async updateTrip(filter: Partial<ITrip>, data: Partial<ITrip>): Promise<WithId<ITrip>> {
+    const updateDoc: Partial<ITrip> = {
+      ...data,
+      modified_at: new Date(),
+    };
+
+    const result = await this.db.collection<ITrip>(this.collectionName).findOneAndUpdate(
+      filter,
+      { $set: updateDoc },
+      { returnDocument: "after" } // do NOT use upsert
+    );
+
+    if (!result) {
+      throw new Error("No matching trip found to update");
+    }
+
+    return result;
+  }
+
+
   public async update(id: string | ObjectId, data: Partial<ITrip>): Promise<void> {
     const _id = typeof id === "string" ? new ObjectId(id) : id;
     await this.db.collection<ITrip>(this.collectionName).updateOne(

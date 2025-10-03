@@ -29,7 +29,7 @@ export enum UserRole {
   MARKETING = "MARKETING",
   SALES = "SALES",
   SUPPORT = "SUPPORT",
-  VENDER = "VENDER",
+  VENDOR = "VENDOR",
   USER = "USER",  // End user / customer
 }
 

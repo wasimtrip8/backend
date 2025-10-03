@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import { IQuotation } from "./quotation";
 
 // Enums
 export enum TripStatus {
@@ -126,14 +127,13 @@ export interface ITrip {
   _id?: ObjectId;
   creator?: ObjectId;
   user_id?: ObjectId;
-  starting?: string;
   destination?: string;
   days?: number;
   nights?: number;
   banner?: string;
   trip_info?: ITripInfo;
   itineraries?: IItinerary;
-  quotation_info?: Record<string, any>;
+  quotation_info?: IQuotation;
   price?: number;
   pre_defined?: boolean;
   status?: TripStatus;

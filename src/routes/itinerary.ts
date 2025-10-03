@@ -12,6 +12,12 @@ export const itinerary = (db: any) => {
     itineraryController.generateItineraryHandler
   );
 
+   router.post(
+    "/suggested-places",
+    authenticateJWT,                 
+    itineraryController.generateSuggestedPlacesHandler
+  );
+
    router.get(
     "/",
     authenticateJWT,                 

@@ -1,5 +1,6 @@
 // src/storage/MongoDBStorage.ts
 import { Db } from "mongodb";
+import { quotation } from "../routes/quotation";
 
 interface IndexDefinition {
   spec: Record<string, 1 | -1>;
@@ -88,6 +89,8 @@ export class MongoDBStorage {
         { spec: { mobile_email: 1 }, options: { unique: true } },
       ],
       trips: [],
+      itineraries: [],
+      quotations: [],
     };
 
     for (const [name, indexes] of Object.entries(collections)) {

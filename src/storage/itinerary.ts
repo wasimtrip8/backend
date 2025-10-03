@@ -3,7 +3,7 @@ import { IItinerary } from "../models/itinerary";
 
 export class ItineraryStorage {
   private db: Db;
-  private collectionName = "itinerary";
+  private collectionName = "itineraries";
 
   constructor(db: Db) {
     this.db = db;
