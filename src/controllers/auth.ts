@@ -157,78 +157,96 @@ export class Auth {
    */
   sendOtp = async (req: Request, res: Response) => {
     try {
-      const { mobile_email, platform_id, verification_type } = req.body;
-      if (!mobile_email) return res.status(400).json({ error: "mobile_email is required" });
+      const { mobile_email, platform_id, verification_type, name, role, source, google_id } = req.body;
 
-      // 🔹 Check if user exists
       const userColl = this.db.collection<IUser>("users");
-      const user = await userColl.findOne({
+      let user = await userColl.findOne({
         $or: [{ mobile: mobile_email }, { email: mobile_email }]
       });
 
-      if (!user) {
-        return res.status(404).json({
-          error: "User not found, please create an account"
-        });
+      // Case 1: user found → send OTP
+      if (user) {
+        return await this.sendOtpToUser(mobile_email, platform_id, verification_type, res);
       }
 
-      const verificationColl = this.db.collection<IVerification>("verification");
-
-      const code = Math.floor(1000 + Math.random() * 9000).toString();
-      const token = crypto.randomBytes(32).toString("hex");
-      const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
-
-      const tokenObj: IVerificationToken = {
-        platform_id: platform_id ? new ObjectId(platform_id) : new ObjectId(),
-        verification_type: verification_type || VerificationType.LOGIN,
-        token,
-        code,
-        verify_attempts: 0,
-        resend_attempts: 0,
-        expires_at: expiresAt,
-        status: TokenStatus.ACTIVE,
-        created_at: new Date(),
-        modified_at: new Date(),
-      };
-
-      const existing = await verificationColl.findOne({ mobile_email });
-
-      if (!existing) {
-        await verificationColl.insertOne({
-          mobile_email,
-          tokens: [tokenObj],
-          status: TokenStatus.ACTIVE,
-          created_at: new Date(),
-          modified_at: new Date(),
-        });
-      } else {
-        await verificationColl.updateOne(
-          { _id: existing._id },
-          {
-            $push: { tokens: tokenObj },
-            $set: { status: TokenStatus.ACTIVE, modified_at: new Date() },
-          }
-        );
+      // Case 2: user not found, no name or role → 404
+      if (!name || !role) {
+        return res.status(404).json({ error: "User not found" });
       }
 
-      return res.status(200).json({ message: "OTP sent", sent: true, otp: code });
+      // Case 3: user not found, name and role provided → create user + send OTP
+      user = await this.getOrCreateUser(mobile_email, role, name, source, google_id);
+
+      return await this.sendOtpToUser(mobile_email, platform_id, verification_type, res);
+
     } catch (err) {
       return res.status(500).json({ error: "Internal server error", err });
     }
   };
 
+  /** Helper to send OTP to a user */
+  private async sendOtpToUser(mobile_email: string, platform_id?: string, verification_type?: any, res?: Response) {
+    const verificationColl = this.db.collection<IVerification>("verification");
 
-  /** OTP login: verify + auto-create user + generate tokens */
+    const code = Math.floor(1000 + Math.random() * 9000).toString();
+    const token = crypto.randomBytes(32).toString("hex");
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 min
+
+    const tokenObj: IVerificationToken = {
+      platform_id: platform_id ? new ObjectId(platform_id) : new ObjectId(),
+      verification_type: verification_type || VerificationType.LOGIN,
+      token,
+      code,
+      verify_attempts: 0,
+      resend_attempts: 0,
+      expires_at: expiresAt,
+      status: TokenStatus.ACTIVE,
+      created_at: new Date(),
+      modified_at: new Date(),
+    };
+
+    const existing = await verificationColl.findOne({ mobile_email });
+
+    if (!existing) {
+      await verificationColl.insertOne({
+        mobile_email,
+        tokens: [tokenObj],
+        status: TokenStatus.ACTIVE,
+        created_at: new Date(),
+        modified_at: new Date(),
+      });
+    } else {
+      await verificationColl.updateOne(
+        { _id: existing._id },
+        {
+          $push: { tokens: tokenObj },
+          $set: { status: TokenStatus.ACTIVE, modified_at: new Date() },
+        }
+      );
+    }
+
+    return res?.status(200).json({ message: "OTP sent", sent: true, otp: code });
+  }
+
+
+
   otpLogin = async (req: Request, res: Response) => {
     try {
-      const { mobile_email, otp, platform_id, name, source, google_id, role } = req.body;
+      const { mobile_email, otp, platform_id } = req.body;
+
       const verificationColl = this.db.collection<IVerification>("verification");
+      const userColl = this.db.collection<IUser>("users");
+
+      const user = await userColl.findOne({
+        $or: [{ mobile: mobile_email }, { email: mobile_email }]
+      });
+
+      if (!user) return res.status(404).json({ error: "User not found" });
+
       const verification = await verificationColl.findOne({ mobile_email });
       if (!verification) return res.status(404).json({ error: "No OTP request found" });
 
       await this.validateOtp(verification, otp);
-
-      const user = await this.getOrCreateUser(mobile_email, role, name, source, google_id);
 
       const tokens = await this.createTokens(user, platform_id);
 
@@ -242,6 +260,7 @@ export class Auth {
       return res.status(400).json({ error: err.message || "OTP login error", err });
     }
   };
+
 
   resendOtp = async (req: Request, res: Response) => {
     try {

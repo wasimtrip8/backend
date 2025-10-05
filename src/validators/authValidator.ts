@@ -21,6 +21,19 @@ export const sendOtpValidator = [
     .optional()
     .isString()
     .withMessage("verification_type must be a string"),
+  body("role")
+    .optional()
+    .isString()
+    .isIn(Object.values(UserRole))
+    .withMessage(`role must be one of: ${Object.values(UserRole).join(", ")}`),
+  body("name")
+    .optional()
+    .isString()
+    .withMessage("name must be a string"),
+  body("source")
+    .optional()
+    .isString()
+    .withMessage("source must be a string"),
 ];
 
 export const verifyOtpValidator = [
@@ -54,21 +67,4 @@ export const otpLoginValidator = [
     .isString()
     .notEmpty()
     .withMessage("otp is required"),
-  body("role")
-    .optional()
-    .isString()
-    .isIn(Object.values(UserRole))
-    .withMessage(`role must be one of: ${Object.values(UserRole).join(", ")}`),
-  body("platform_id")
-    .optional()
-    .isString()
-    .withMessage("platform_id must be a string"),
-  body("name")
-    .optional()
-    .isString()
-    .withMessage("name must be a string"),
-  body("source")
-    .optional()
-    .isString()
-    .withMessage("source must be a string"),
 ];
