@@ -1,20 +1,19 @@
 import express from "express";
-import { auth } from "./routes/auth";
-import { itinerary } from "./routes/itinerary";
-import { quotation } from "./routes/quotation";
+import cors from "cors";
+import { setupRoutes } from "./routes/router";
 
 const app = express();
+
+// Enable CORS for your frontend
+app.use(cors({
+  origin: "http://localhost:4000", // frontend URL
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true,
+}));
+
 app.use(express.json());
 
-// Routes (db is injected later in server.ts)
-export function setupRoutes(db: any) {
-  app.use("/auth", auth(db));
-  app.use("/itinerary", itinerary(db));
-  app.use("/quotation", quotation(db));
-  app.get("/ping", (_req, res) => {
-  res.json({ status: "alive", timestamp: new Date() });
-});
-
-}
+// Note: routes are now mounted in server.ts after DB is connected
 
 export default app;
+export { setupRoutes };

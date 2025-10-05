@@ -20,7 +20,7 @@ const APP_URL = process.env.APP_URL || `http://localhost:${PORT}`;
     await storage.initializeDatabase();
 
     // Setup routes with db
-    setupRoutes(db);
+    app.use(setupRoutes(db));
 
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
@@ -33,7 +33,7 @@ const APP_URL = process.env.APP_URL || `http://localhost:${PORT}`;
         } catch (err) {
           console.error("❌ Ping failed:", err);
         }
-      }, 10 * 60 * 1000); // 10 minutes
+      }, 10 * 60 * 1000);
     });
   } catch (error) {
     console.error("❌ Failed to start server:", error);
