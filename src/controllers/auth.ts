@@ -160,6 +160,18 @@ export class Auth {
       const { mobile_email, platform_id, verification_type } = req.body;
       if (!mobile_email) return res.status(400).json({ error: "mobile_email is required" });
 
+      // 🔹 Check if user exists
+      const userColl = this.db.collection<IUser>("users");
+      const user = await userColl.findOne({
+        $or: [{ mobile: mobile_email }, { email: mobile_email }]
+      });
+
+      if (!user) {
+        return res.status(404).json({
+          error: "User not found, please create an account"
+        });
+      }
+
       const verificationColl = this.db.collection<IVerification>("verification");
 
       const code = Math.floor(1000 + Math.random() * 9000).toString();
