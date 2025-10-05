@@ -24,5 +24,11 @@ export const itinerary = (db: any) => {
     itineraryController.getTripsHandler
   );
 
+     router.get(
+    "/:id",
+    authenticateJWT,                 
+    itineraryController.getTripByIdHandler
+  );
+
   return router;
 };

@@ -25,33 +25,19 @@ export class Itinerary {
 
   public getTripsHandler = async (req: Request, res: Response) => {
     try {
-      // Parse locations from query
-      let locations: string[] = [];
-      if (req.query.location) {
-        if (Array.isArray(req.query.location)) {
-          locations = req.query.location as string[];
-        } else {
-          locations = (req.query.location as string).split(",").map(s => s.trim());
-        }
-      }
-
-      // Build MongoDB filter
-      const filter: any = {};
-      if (locations.length > 0) {
-        filter.$or = locations.flatMap(loc => [
-          { starting: { $regex: loc, $options: "i" } },
-          { destination: { $regex: loc, $options: "i" } }
-        ]);
-      }
-
-      // Pagination
+      // Parse pagination
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
       const skip = (page - 1) * limit;
 
       const tripStorage = new TripStorage(this.db);
-      const trips = await tripStorage.find(filter, { skip, limit, sort: { created_at: -1 } });
-      const total = await tripStorage.count(filter);
+
+      // Pass query params into TripStorage
+      const { trips, total } = await tripStorage.getTripsWithFilters({
+        query: req.query,
+        skip,
+        limit
+      });
 
       res.json({
         data: trips,
@@ -65,6 +51,31 @@ export class Itinerary {
       res.status(500).json({ error: "Failed to fetch trips", details: err.message });
     }
   };
+
+  public getTripByIdHandler = async (req: Request, res: Response) => {
+    try {
+      const tripId = req.params.id;
+      const userId = (req as any).user.userId; // or from auth token
+
+      if (!tripId) return res.status(400).json({ error: "trip_id is required" });
+
+      const tripStorage = new TripStorage(this.db);
+      const trip = await tripStorage.getTripById(tripId);
+
+      if (!trip) return res.status(404).json({ error: "Trip not found" });
+
+      // Log view in trip_views if user_id provided
+      if (userId && trip._id) {
+        await tripStorage.addTripView(trip._id, userId);
+      }
+
+      res.json({ data: trip });
+    } catch (err: any) {
+      console.error(err);
+      res.status(500).json({ error: "Failed to fetch trip", details: err.message });
+    }
+  };
+
 
   // inside Itinerary class
   public generateSuggestedPlacesHandler = async (req: Request, res: Response) => {

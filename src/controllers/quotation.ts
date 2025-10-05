@@ -15,8 +15,8 @@ export class QuotationController {
 
     public createQuotation = async (req: Request, res: Response) => {
         try {
-            const user_id = (req as any).user.userId;
-            const data = { ...req.body, creator: user_id, user_id: user_id };
+            const userId = (req as any).user.userId;
+            const data = { ...req.body, creator: userId, user_id: userId };
             // Create quotation
             const quotation: IQuotation = await this.storage.create(data);
             // Dump the entire quotation into the related trip
@@ -43,9 +43,9 @@ export class QuotationController {
 
     public getQuotationById = async (req: Request, res: Response) => {
         try {
-            const user_id = (req as any).user._id;
+             const userId = (req as any).user.userId;
             const { id } = req.params;
-            const quotation = await this.storage.getById(id, user_id);
+            const quotation = await this.storage.getById(id, userId);
             if (!quotation) return res.status(404).json({ error: "Quotation not found" });
             res.json(quotation);
         } catch (err: any) {
@@ -55,9 +55,9 @@ export class QuotationController {
 
     public deleteQuotationById = async (req: Request, res: Response) => {
         try {
-            const user_id = (req as any).user._id;
+            const userId = (req as any).user.userId;
             const { id } = req.params;
-            const deleted = await this.storage.deleteById(id, user_id);
+            const deleted = await this.storage.deleteById(id, userId);
             if (!deleted) return res.status(404).json({ error: "Quotation not found or not authorized" });
             res.json({ success: true });
         } catch (err: any) {
