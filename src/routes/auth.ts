@@ -1,7 +1,7 @@
 import express from "express";
 import { validate } from "../middlewares/validate";
 import { Auth } from "../controllers/auth";
-import { refreshValidator, sendOtpValidator, verifyOtpValidator, resendOtpValidator, otpLoginValidator } from "../validators/authValidator";
+import { refreshValidator, sendOtpValidator, resendOtpValidator, otpLoginValidator } from "../validators/auth";
 
 export const auth = (db: any) => {
   const router = express.Router();

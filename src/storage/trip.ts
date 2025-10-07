@@ -16,6 +16,15 @@ export class TripStorage {
     this.db = db;
   }
 
+  private applyQuotationStatusFilter(filter: any, status: string | string[]) {
+    if (Array.isArray(status)) {
+      filter["quotation_info.status"] = { $in: status };
+    } else {
+      filter["quotation_info.status"] = status;
+    }
+  }
+
+
   public async create(data: Partial<ITrip>): Promise<WithId<ITrip>> {
     const result = await this.db.collection<ITrip>(this.collectionName).insertOne({
       ...data,
@@ -107,6 +116,11 @@ export class TripStorage {
       if (tags.length > 0) {
         filter["trip_info.trip_types"] = { $in: tags };
       }
+    }
+
+    // Quotation status filter
+    if (query.quotation_status) {
+      this.applyQuotationStatusFilter(filter, query.quotation_status);
     }
 
     // Trending

@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { QuotationStorage } from "../storage/quotation";
 import { Db, ObjectId } from "mongodb";
 import { TripStorage } from "../storage/trip";
-import { IQuotation } from "../models/quotation";
+import { IQuotation, QuotationStatus } from "../models/quotation";
 
 export class QuotationController {
     private db: Db;
@@ -16,7 +16,7 @@ export class QuotationController {
     public createQuotation = async (req: Request, res: Response) => {
         try {
             const userId = (req as any).user.userId;
-            const data = { ...req.body, creator: userId, user_id: userId };
+            const data = { ...req.body, creator: userId, user_id: userId, status: QuotationStatus.REQUESTED } as IQuotation;
             // Create quotation
             const quotation: IQuotation = await this.storage.create(data);
             // Dump the entire quotation into the related trip

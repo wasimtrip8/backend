@@ -9,7 +9,7 @@ export function setupRoutes(db: any): Router {
 
   router.use("/auth", auth(db));
   router.use("/itinerary", itinerary(db));
-  router.use("/quotation", quotation(db));
+  router.use("/quotations", quotation(db));
 
   router.get("/ping", (_req, res) => {
     res.json({ status: "alive", timestamp: new Date() });
