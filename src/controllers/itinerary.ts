@@ -3,6 +3,7 @@ import { Db } from "mongodb";
 import { ITrip } from "../models/itinerary";
 import { TripStorage } from "../storage/trip";
 import { Helper } from "../utils/helper";
+import { QuotationStorage } from "../storage/quotation";
 
 export class Itinerary {
   private db: Db;
@@ -70,8 +71,12 @@ export class Itinerary {
       if (userId && trip._id) {
         await tripStorage.addTripView(trip._id, userId);
       }
+      const quotationStorage = new QuotationStorage(this.db);
 
-      res.json({ data: trip });
+      // Fetch quotations for this trip
+      const quotations = await quotationStorage.getQuotationsByTripId(tripId);
+
+      res.json({ data: {...trip, quotations} });
     } catch (err: any) {
       console.error(err);
       res.status(500).json({ error: "Failed to fetch trip", details: err.message });

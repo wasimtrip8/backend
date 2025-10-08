@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { QuotationStorage } from "../storage/quotation";
 import { Db, ObjectId } from "mongodb";
-import { TripStorage } from "../storage/trip";
 import { IQuotation, QuotationStatus } from "../models/quotation";
 import { UserRole } from "../types/enum";
 
@@ -27,20 +26,61 @@ export class QuotationController {
                 status = QuotationStatus.REQUESTED;
             }
 
+            // Convert IDs to ObjectId
             const data: IQuotation = {
                 ...req.body,
-                creator: userId,
-                user_id: userId,
+                trip_id: new ObjectId(req.body.trip_id),
+                creator: new ObjectId(userId),
+                user_id: new ObjectId(userId),
                 status,
             };
             // Create quotation
             const quotation: IQuotation = await this.storage.create(data);
 
-            res.status(200).json({_id: quotation._id});
+            res.status(200).json({ _id: quotation._id });
         } catch (err: any) {
             res.status(400).json({ error: err.message });
         }
     };
+
+    public quoteOrRejectQuotation = async (req: Request, res: Response) => {
+        try {
+            const userId = (req as any).user.userId;
+            const quotationId = req.params.id;
+
+            // Determine new status from route
+            let status: QuotationStatus;
+            if (req.path.includes("quote")) {
+                status = QuotationStatus.QUOTE_IN_PROGRESS;
+            } else if (req.path.includes("reject")) {
+                status = QuotationStatus.REJECTED;
+            } else {
+                return res.status(400).json({ error: "Invalid route" });
+            }
+
+            // Fetch original quotation
+            const original = await this.storage.getById(quotationId);
+            if (!original) return res.status(404).json({ error: "Quotation not found" });
+
+            // Clone and update fields
+            const newQuotation: IQuotation = {
+                ...original,
+                _id: undefined,
+                creator: new ObjectId(userId),
+                user_id: new ObjectId(userId),
+                status,
+                created_at: new Date(),
+                modified_at: new Date(),
+            };
+
+            const inserted = await this.storage.create(newQuotation);
+
+            res.status(200).json({ _id: inserted._id });
+        } catch (err: any) {
+            res.status(500).json({ error: err.message });
+        }
+    };
+
 
     public getUserQuotations = async (req: Request, res: Response) => {
         try {

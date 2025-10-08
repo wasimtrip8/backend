@@ -32,7 +32,7 @@ export class QuotationStorage {
 
     // Apply vendor filter only for statuses representing user actions
     if (status === QuotationStatus.QUOTE_IN_PROGRESS || status === QuotationStatus.REJECTED) {
-      filter.vendor_id = new ObjectId(vendorId);
+      filter.creator = new ObjectId(vendorId);
     }
 
     const quotations = await this.db
@@ -66,4 +66,11 @@ export class QuotationStorage {
 
     return result.modifiedCount > 0;
   }
+
+public async getQuotationsByTripId(tripId: string | ObjectId): Promise<WithId<IQuotation>[]> {
+  const _id = typeof tripId === "string" ? new ObjectId(tripId) : tripId;
+  return this.db.collection<IQuotation>(this.collectionName)
+    .find({ trip_id: _id, is_deleted: false })
+    .toArray();
+}
 }
