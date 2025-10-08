@@ -1,11 +1,15 @@
 import { Db, ObjectId, WithId } from "mongodb";
 import { ITrip } from "../models/itinerary";
 import { ITripView } from "../models/tripViews";
+import { UserRole } from "../types/enum";
+import { QuotationStorage } from "./quotation";
+import { QuotationStatus } from "../models/quotation";
 
 interface TripFilterOptions {
   query: any;
   skip: number;
   limit: number;
+  user: any;
 }
 
 export class TripStorage {
@@ -81,7 +85,7 @@ export class TripStorage {
     return this.db.collection<ITrip>(this.collectionName).findOne({ _id });
   }
 
-  public async getTripsWithFilters({ query, skip, limit }: TripFilterOptions) {
+  public async getTripsWithFilters({ query, skip, limit, user }: TripFilterOptions) {
     const filter: any = {};
 
     // Location filter
@@ -119,10 +123,23 @@ export class TripStorage {
     }
 
     // Quotation status filter
-    if (query.quotation_status) {
-      this.applyQuotationStatusFilter(filter, query.quotation_status);
-    }
+    if (query.quotation_status && user.role === UserRole.VENDOR) {
+      const quotationStorage = new QuotationStorage(this.db);
 
+      // Get trip IDs from quotations
+      const tripIds = await quotationStorage.getVendorTripIdsByStatus(
+        user.userId,
+        query.quotation_status as QuotationStatus
+      );
+
+      if (tripIds.length > 0) {
+        // Convert all IDs to ObjectId in case they are strings
+        filter._id = { $in: tripIds.map(id => new ObjectId(id)) };
+      } else {
+        return { trips: [], total: 0 };
+      }
+    }
+    
     // Trending
     if (query.trending === "true") {
       return this.getTrendingTrips(filter, skip, limit);

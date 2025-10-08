@@ -29,6 +29,7 @@ export class Itinerary {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
       const skip = (page - 1) * limit;
+      const user = req.user;
 
       const tripStorage = new TripStorage(this.db);
 
@@ -36,7 +37,8 @@ export class Itinerary {
       const { trips, total } = await tripStorage.getTripsWithFilters({
         query: req.query,
         skip,
-        limit
+        limit,
+        user
       });
 
       res.json({
