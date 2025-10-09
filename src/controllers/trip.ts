@@ -2,10 +2,11 @@ import { Request, Response } from "express";
 import { Db } from "mongodb";
 import { ITrip } from "../models/itinerary";
 import { TripStorage } from "../storage/trip";
+import { ItineraryStorage } from "../storage/itinerary";
 import { Helper } from "../utils/helper";
 import { QuotationStorage } from "../storage/quotation";
 
-export class Itinerary {
+export class Trip {
   private db: Db;
 
   constructor(db: Db) {
@@ -52,6 +53,24 @@ export class Itinerary {
     } catch (err: any) {
       console.error(err);
       res.status(500).json({ error: "Failed to fetch trips", details: err.message });
+    }
+  };
+
+    public getItineraryByIdHandler = async (req: Request, res: Response) => {
+      try {
+      const itineraryId = req.params.id;
+
+      if (!itineraryId) return res.status(400).json({ error: "itineraryId is required" });
+
+      const itineraryStorage = new ItineraryStorage(this.db);
+      const itinerary = await itineraryStorage.findById(itineraryId);
+
+      if (!itinerary) return res.status(404).json({ error: "Trip not found" });
+
+      res.json({ data: itinerary });
+    } catch (err: any) {
+      console.error(err);
+      res.status(500).json({ error: "Failed to fetch itinerary", details: err.message });
     }
   };
 

@@ -1,33 +1,39 @@
 import express from "express";
-import { Itinerary } from "../controllers/itinerary";
+import { Trip } from "../controllers/trip";
 import { authenticateJWT } from "../middlewares/auth"; 
 
-export const itinerary = (db: any) => {
+export const trip = (db: any) => {
   const router = express.Router();
-  const itineraryController = new Itinerary(db);
+  const tripController = new Trip(db);
 
   router.post(
     "/generate",
     authenticateJWT,                 
-    itineraryController.generateItineraryHandler
+    tripController.generateItineraryHandler
   );
 
    router.post(
     "/suggested-places",
     authenticateJWT,                 
-    itineraryController.generateSuggestedPlacesHandler
+    tripController.generateSuggestedPlacesHandler
   );
 
    router.get(
     "/",
     authenticateJWT,                 
-    itineraryController.getTripsHandler
+    tripController.getTripsHandler
   );
 
      router.get(
     "/:id",
     authenticateJWT,                 
-    itineraryController.getTripByIdHandler
+    tripController.getTripByIdHandler
+  );
+
+       router.get(
+    "/itinerary/:id",
+    authenticateJWT,                 
+    tripController.getItineraryByIdHandler
   );
 
   return router;

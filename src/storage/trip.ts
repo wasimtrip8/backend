@@ -20,14 +20,6 @@ export class TripStorage {
     this.db = db;
   }
 
-  private applyQuotationStatusFilter(filter: any, status: string | string[]) {
-    if (Array.isArray(status)) {
-      filter["quotation_info.status"] = { $in: status };
-    } else {
-      filter["quotation_info.status"] = status;
-    }
-  }
-
 
   public async create(data: Partial<ITrip>): Promise<WithId<ITrip>> {
     const result = await this.db.collection<ITrip>(this.collectionName).insertOne({

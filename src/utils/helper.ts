@@ -25,7 +25,7 @@ export class Helper {
     const tripStorage = new TripStorage(db);
     await tripStorage.create({ ...userData, itineraries });
 
-    return itineraries;
+    return {_id: itineraries._id};
   }
 
   public static async generateSuggestedPlaces(db: Db, userData: ITrip): Promise<IItinerary> {
