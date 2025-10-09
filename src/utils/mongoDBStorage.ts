@@ -91,6 +91,7 @@ export class MongoDBStorage {
       trips: [],
       itineraries: [],
       quotations: [],
+      assets: [],
     };
 
     for (const [name, indexes] of Object.entries(collections)) {
