@@ -1,6 +1,6 @@
 import express from "express";
 import { Trip } from "../controllers/trip";
-import { authenticateJWT } from "../middlewares/auth"; 
+import { authenticateJWT } from "../middlewares/auth";
 
 export const trip = (db: any) => {
   const router = express.Router();
@@ -8,31 +8,43 @@ export const trip = (db: any) => {
 
   router.post(
     "/generate",
-    authenticateJWT,                 
+    authenticateJWT,
     tripController.generateItineraryHandler
   );
 
-   router.post(
+  router.post(
     "/suggested-places",
-    authenticateJWT,                 
+    authenticateJWT,
     tripController.generateSuggestedPlacesHandler
   );
 
-   router.get(
+      router.get(
+    "/created",
+    authenticateJWT,
+    tripController.myCreatedTripsHandler
+  );
+
+  router.get(
     "/",
-    authenticateJWT,                 
+    authenticateJWT,
     tripController.getTripsHandler
   );
 
-     router.get(
+  router.get(
     "/:id",
-    authenticateJWT,                 
+    authenticateJWT,
     tripController.getTripByIdHandler
   );
 
-       router.get(
+  router.post(
+    "/:id/wishlist",
+    authenticateJWT,
+    tripController.addToWishlistHandler
+  );
+
+  router.get(
     "/itinerary/:id",
-    authenticateJWT,                 
+    authenticateJWT,
     tripController.getItineraryByIdHandler
   );
 
