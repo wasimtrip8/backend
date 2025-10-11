@@ -56,11 +56,6 @@ export interface Location {
   longitude?: number;
 }
 
-export interface Tag {
-  name: string;
-  icon?: string;
-}
-
 export interface Activity {
   name?: string;
   description?: string;
@@ -82,7 +77,7 @@ export interface IAsset {
   activity?: Activity;
   price: number;
   status: AssetStatus;
-  tags?: Tag[];
+  tags?: string[];
   is_deleted?: boolean;
   deleted_at?: Date | null;
   created_at?: Date;

@@ -5,6 +5,8 @@ import { TripStorage } from "../storage/trip";
 import { ItineraryStorage } from "../storage/itinerary";
 import { Helper } from "../utils/helper";
 import { QuotationStorage } from "../storage/quotation";
+import { UserRole } from "../types/enum";
+import { parsePagination } from "../utils/pagination";
 
 export class Trip {
   private db: Db;
@@ -25,36 +27,32 @@ export class Trip {
     }
   };
 
-  public getTripsHandler = async (req: Request, res: Response) => {
-    try {
-      // Parse pagination
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 10;
-      const skip = (page - 1) * limit;
-      const user = req.user;
+public getTripsHandler = async (req: Request, res: Response) => {
+  try {
+    const { page, limit, skip } = parsePagination(req.query);
+    const user = req.user;
 
-      const tripStorage = new TripStorage(this.db);
-
-      // Pass query params into TripStorage
-      const { trips, total } = await tripStorage.getTripsWithFilters({
-        query: req.query,
-        skip,
-        limit,
-        user
-      });
-
-      res.json({
-        data: trips,
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      });
-    } catch (err: any) {
-      console.error(err);
-      res.status(500).json({ error: "Failed to fetch trips", details: err.message });
+    let trips, total;
+     const tripStorage = new TripStorage(this.db);
+     const query = req.query;
+    if (user?.role === UserRole.VENDOR) {
+      ({ trips, total } = await tripStorage.getVendorTrips({query, skip, limit, user}));
+    } else {
+      ({ trips, total } = await tripStorage.getUserTrips({query, skip, limit}));
     }
-  };
+
+    res.json({
+      data: trips,
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    });
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch trips", details: err.message });
+  }
+};
 
     public getItineraryByIdHandler = async (req: Request, res: Response) => {
       try {

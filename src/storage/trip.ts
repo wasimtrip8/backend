@@ -9,7 +9,7 @@ interface TripFilterOptions {
   query: any;
   skip: number;
   limit: number;
-  user: any;
+  user?: any;
 }
 
 export class TripStorage {
@@ -77,10 +77,34 @@ export class TripStorage {
     return this.db.collection<ITrip>(this.collectionName).findOne({ _id });
   }
 
-  public async getTripsWithFilters({ query, skip, limit, user }: TripFilterOptions) {
+  public async getVendorTrips({ query, skip, limit, user }: TripFilterOptions) {
+    const filter: any = {};
+    const quotationStorage = new QuotationStorage(this.db);
+
+    if (query.quotation_status) {
+      const tripIds = await quotationStorage.getVendorTripIdsByStatus(
+        user.userId,
+        query.quotation_status as QuotationStatus
+      );
+
+      if (tripIds.length > 0) {
+        filter._id = { $in: tripIds.map((id) => new ObjectId(id)) };
+      } else {
+        return { trips: [], total: 0 };
+      }
+    }
+
+    const trips = await this.find(filter, { skip, limit, sort: { created_at: -1 } });
+    const total = await this.count(filter);
+
+    return { trips, total };
+  }
+
+
+  public async getUserTrips({ query, skip, limit }: TripFilterOptions) {
     const filter: any = {};
 
-    // Location filter
+    // --- Location filter ---
     if (query.location) {
       const locations = Array.isArray(query.location)
         ? query.location
@@ -94,16 +118,15 @@ export class TripStorage {
       }
     }
 
-    // Price filter
     if (query.price) {
       const price = parseFloat(query.price as string);
       if (!isNaN(price)) {
-        filter.price = { $lte: price }; // <= price
+        filter.price = { $lte: price };
       }
     }
 
 
-    // Tags filter
+    // --- Tags filter ---
     if (query.tags) {
       const tags = Array.isArray(query.tags)
         ? query.tags
@@ -114,30 +137,29 @@ export class TripStorage {
       }
     }
 
-    // Quotation status filter
-    if (query.quotation_status && user.role === UserRole.VENDOR) {
-      const quotationStorage = new QuotationStorage(this.db);
+    // --- Only trips that have quotations ---
+    const quotationStorage = new QuotationStorage(this.db);
+    const quotedTripIds = await quotationStorage.getQuotedTripIds();
 
-      // Get trip IDs from quotations
-      const tripIds = await quotationStorage.getVendorTripIdsByStatus(
-        user.userId,
-        query.quotation_status as QuotationStatus
+    if (quotedTripIds.length === 0) {
+      return { trips: [], total: 0 };
+    }
+
+    filter._id = { $in: quotedTripIds };
+
+    // --- Trending filter ---
+    if (query.trending === "true") {
+      // Intersect trending trips with quoted trips
+      const { trips: trendingTrips, total: trendingTotal } = await this.getTrendingTrips(
+        filter,
+        skip,
+        limit
       );
 
-      if (tripIds.length > 0) {
-        // Convert all IDs to ObjectId in case they are strings
-        filter._id = { $in: tripIds.map(id => new ObjectId(id)) };
-      } else {
-        return { trips: [], total: 0 };
-      }
-    }
-    
-    // Trending
-    if (query.trending === "true") {
-      return this.getTrendingTrips(filter, skip, limit);
+      return { trips: trendingTrips, total: trendingTotal };
     }
 
-    // Normal fetch
+    // --- Normal fetch ---
     const trips = await this.find(filter, { skip, limit, sort: { created_at: -1 } });
     const total = await this.count(filter);
 
@@ -157,21 +179,21 @@ export class TripStorage {
     const trending = await tripViewsColl.aggregate(pipeline).toArray();
     const tripIds = trending.map((t) => t._id);
 
-    // fetch trips by these IDs
+    // fetch trips by these IDs, respecting existing filters
     const trips = await this.find(
-      { ...filter, _id: { $in: tripIds } },
+      { ...filter, _id: { $in: tripIds.filter((id) => filter._id?.$in.some((qid: ObjectId) => qid.equals(id))) } },
       { skip: 0, limit: tripIds.length }
     );
 
-    // keep order same as trending result
+    // preserve order
     const tripMap = new Map(trips.map((t) => [t._id.toString(), t]));
     const sortedTrips = tripIds.map((id) => tripMap.get(id.toString())).filter(Boolean);
 
-    // total trending count (unique trip_ids in trip_views)
     const total = await tripViewsColl.distinct("trip_id").then((arr) => arr.length);
 
     return { trips: sortedTrips, total };
   }
+
 
   async getTripById(tripId: string | ObjectId): Promise<ITrip | null> {
     const _id = typeof tripId === "string" ? new ObjectId(tripId) : tripId;
