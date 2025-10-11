@@ -1,4 +1,4 @@
-import { Db, WithId } from "mongodb";
+import { Db, ObjectId, WithId } from "mongodb";
 import { IWishlist } from "../models/wishlist";
 
 export class WishlistStorage {
@@ -16,4 +16,9 @@ export class WishlistStorage {
     });
     return { ...data, _id: result.insertedId } as WithId<IWishlist>;
   }
+
+    public async getAllByUser(user_id: ObjectId): Promise<WithId<IWishlist>[]> {
+      const _id = new ObjectId(user_id) ;
+      return this.db.collection<IWishlist>(this.collectionName).find({ user_id: _id}).toArray();
+    }
 }

@@ -18,10 +18,16 @@ export const trip = (db: any) => {
     tripController.generateSuggestedPlacesHandler
   );
 
-      router.get(
+  router.get(
     "/created",
     authenticateJWT,
     tripController.myCreatedTripsHandler
+  );
+
+  router.get(
+    "/wishlist",
+    authenticateJWT,
+    tripController.getWishlistedTripsHandler
   );
 
   router.get(

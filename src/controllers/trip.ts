@@ -117,6 +117,55 @@ export class Trip {
     }
   };
 
+  public getWishlistedTripsHandler = async (req: Request, res: Response) => {
+    try {
+      const { page, limit, skip } = parsePagination(req.query);
+      const userId = new ObjectId((req as any).user.userId);
+
+      const wishlistStorage = new WishlistStorage(this.db);
+      const tripStorage = new TripStorage(this.db);
+
+      // 1️⃣ Get all wishlist entries for this user
+      const wishlists = await wishlistStorage.getAllByUser(userId);
+
+      const tripIds = wishlists.map((w) => w.trip_id);
+
+      if (!tripIds) {
+        return res.json({
+          data: [],
+          page,
+          limit,
+          total: 0,
+          totalPages: 0,
+        });
+      }
+
+      if (!tripIds) return;
+
+      // 3️⃣ Fetch trips by these IDs
+      const trips = await tripStorage.find(
+        { _id: { $in: tripIds } },
+        { skip, limit, sort: { created_at: -1 } }
+      );
+      const total = await tripStorage.count({ _id: { $in: tripIds } });
+
+      // 4️⃣ Return paginated response
+      res.json({
+        data: trips,
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      });
+    } catch (err: any) {
+      console.error(err);
+      res.status(500).json({
+        error: "Failed to fetch wishlisted trips",
+        details: err.message,
+      });
+    }
+  };
+
   public myCreatedTripsHandler = async (req: Request, res: Response) => {
     try {
       const { page, limit, skip } = parsePagination(req.query);

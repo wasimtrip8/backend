@@ -1,5 +1,5 @@
 import { response } from "express"
-import { Db } from "mongodb"
+import { Db, ObjectId } from "mongodb"
 import { callOpenAI } from "../clients/openAIClient"
 import { ItineraryStorage } from "../storage/itinerary"
 import { TripStorage } from "../storage/trip"
@@ -25,7 +25,7 @@ export class Helper {
     const tripStorage = new TripStorage(db);
     await tripStorage.create({ ...userData, itineraries });
 
-    return {_id: itineraries._id};
+    return { _id: itineraries._id };
   }
 
   public static async generateSuggestedPlaces(db: Db, userData: ITrip): Promise<IItinerary> {
@@ -34,5 +34,17 @@ export class Helper {
     const placeList = extractTextFromOpenAI(response);
 
     return placeList;
+  }
+
+  public static convertToObjectIds(ids: (ObjectId | string | undefined)[]): ObjectId[] | null {
+    const objectIds = Array.from(
+      new Set(
+        ids
+          .filter((id): id is ObjectId | string => id != null)
+          .map((id) => (id instanceof ObjectId ? id.toString() : id))
+      )
+    ).map((id) => new ObjectId(id));
+
+    return objectIds.length > 0 ? objectIds : null;
   }
 }
