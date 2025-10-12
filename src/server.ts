@@ -1,3 +1,6 @@
+/// <reference path="./types/express.d.ts" />
+
+
 import dotenv from "dotenv";
 import app, { setupRoutes } from "./app";
 import { connectToDatabase } from "./utils/db";

@@ -1,9 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { UserRole } from "../types/enum";
 
 const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
 
-export function authorizeRoles(allowedRoles: string[]) {
+export function authorizeRoles(allowedRoles: UserRole[]) {
   return (req: Request, res: Response, next: NextFunction) => {
     const user = (req as any).user;
 

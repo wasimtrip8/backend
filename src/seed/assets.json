@@ -1,0 +1,116 @@
+[
+  {
+    "user_id": "64f0c2a3b5d1a1234567890",
+    "name": "Luxury Hotel",
+    "description": "Beach front hotel",
+    "category": "STAY",
+    "type": "HOTEL",
+    "sub_type": "GUEST_HOUSE",
+    "banner": "hotel.jpg",
+    "images": [
+      "img1.jpg,img2.jpg"
+    ],
+    "location": {
+      "address": "Goa Beach",
+      "place_id": "64f0c2a3",
+      "latitude": 15.5,
+      "longitude": 73.8
+    },
+    "activity": {
+      "name": "Snorkeling",
+      "duration": "2h"
+    },
+    "price": "5000",
+    "status": "ACTIVE",
+    "tags": [
+      {
+        "name": "beach",
+        "icon": "🏖"
+      }
+    ]
+  },
+  {
+    "user_id": "64f0c2a3b5d1a1234567891",
+    "name": "Toyota Innova",
+    "description": "7-seater car",
+    "category": "TRANSPORT",
+    "type": "CAR",
+    "sub_type": "COMPACT_7_SEATER",
+    "banner": "car.jpg",
+    "images": [
+      "img1.jpg,img2.jpg"
+    ],
+    "location": {
+      "address": "Mumbai Airport",
+      "place_id": "64f0c2a4",
+      "latitude": 19.1,
+      "longitude": 72.9
+    },
+    "activity": {},
+    "price": "1000",
+    "status": "ACTIVE",
+    "tags": [
+      {
+        "name": "AC",
+        "icon": "❄️"
+      }
+    ]
+  },
+  {
+    "user_id": "64f0c2a3b5d1a1234567892",
+    "name": "Veg Delight",
+    "description": "Pure veg restaurant",
+    "category": "FOOD",
+    "type": "PURE_VEG",
+    "sub_type": "HATCHBACK",
+    "banner": "food.jpg",
+    "images": [
+      "img1.jpg,img2.jpg"
+    ],
+    "location": {
+      "address": "Delhi",
+      "place_id": "64f0c2a5",
+      "latitude": 28.6,
+      "longitude": 77.2
+    },
+    "activity": {},
+    "price": "500",
+    "status": "ACTIVE",
+    "tags": [
+      {
+        "name": "veg",
+        "icon": "🥗"
+      }
+    ]
+  },
+  {
+    "user_id": "64f0c2a3b5d1a1234567893",
+    "name": "River Rafting",
+    "description": "Adventure activity",
+    "category": "EXPERIENCE",
+    "type": "NULL",
+    "sub_type": "NULL",
+    "banner": "rafting.jpg",
+    "images": [
+      "img1.jpg,img2.jpg"
+    ],
+    "location": {
+      "address": "Rishikesh",
+      "place_id": "64f0c2a6",
+      "latitude": 30.1,
+      "longitude": 78.3
+    },
+    "activity": {
+      "name": "rafting",
+      "duration": "3h"
+    },
+    "price": "2000",
+    "status": "ACTIVE",
+    "tags": [
+      {
+        "name": "adventure",
+        "icon": "🌊"
+      }
+    ]
+  }
+]

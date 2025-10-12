@@ -23,6 +23,51 @@ export class QuotationStorage {
     return this.db.collection<IQuotation>(this.collectionName).find({ user_id: _id, is_deleted: false }).toArray();
   }
 
+  // In QuotationStorage
+  public async getVendorTripIdsByStatus(
+    vendorId: string,
+    status: QuotationStatus
+  ): Promise<ObjectId[]> {
+    const filter: any = { status, is_deleted: false };
+
+    // Apply vendor filter only for statuses representing user actions
+    if (status === QuotationStatus.QUOTE_IN_PROGRESS || status === QuotationStatus.REJECTED) {
+      filter.creator = new ObjectId(vendorId);
+    }
+
+    const quotations = await this.db
+      .collection<IQuotation>(this.collectionName)
+      .find(filter)
+      .project({ trip_id: 1 }) // only fetch trip_id
+      .toArray();
+
+    return quotations
+      .map((q) => q.trip_id)
+      .filter((id): id is ObjectId => !!id);
+  }
+
+
+  public async getQuotedTripIds(): Promise<ObjectId[]> {
+    const filter: any = {
+      is_deleted: false,
+      status: QuotationStatus.QUOTED, // only consider quoted
+    };
+
+    const quotations = await this.db
+      .collection<IQuotation>(this.collectionName)
+      .find(filter)
+      .project({ trip_id: 1 })
+      .toArray();
+
+    return quotations
+      .map((q) => q.trip_id)
+      .filter((id): id is ObjectId | string => !!id)
+      .map((id) => (typeof id === "string" ? new ObjectId(id) : id));
+  }
+
+
+
+
   public async getById(id: string | ObjectId, user_id?: string | ObjectId): Promise<WithId<IQuotation> | null> {
     const _id = typeof id === "string" ? new ObjectId(id) : id;
     const filter: any = { _id, is_deleted: false };
@@ -42,5 +87,12 @@ export class QuotationStorage {
     );
 
     return result.modifiedCount > 0;
+  }
+
+  public async getQuotationsByTripId(tripId: string | ObjectId): Promise<WithId<IQuotation>[]> {
+    const _id = typeof tripId === "string" ? new ObjectId(tripId) : tripId;
+    return this.db.collection<IQuotation>(this.collectionName)
+      .find({ trip_id: _id, is_deleted: false })
+      .toArray();
   }
 }

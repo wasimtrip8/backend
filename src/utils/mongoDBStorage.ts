@@ -91,6 +91,8 @@ export class MongoDBStorage {
       trips: [],
       itineraries: [],
       quotations: [],
+      assets: [],
+      wishlist: [ { spec: { trip_id: 1 }, options: { unique: true } },],
     };
 
     for (const [name, indexes] of Object.entries(collections)) {
