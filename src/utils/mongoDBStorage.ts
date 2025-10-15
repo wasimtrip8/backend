@@ -92,6 +92,7 @@ export class MongoDBStorage {
       itineraries: [],
       quotations: [],
       assets: [],
+      locations: [],
       wishlist: [ { spec: { trip_id: 1 }, options: { unique: true } },],
     };
 

@@ -107,15 +107,22 @@ export class Trip {
       const userId = new ObjectId((req as any).user.userId);
 
       const wishlistStorage = new WishlistStorage(this.db);
-      await wishlistStorage.create({ trip_id: tripId, user_id: userId });
 
-      // Return just success
-      res.json({ success: true });
+      const existing = await wishlistStorage.findOne({ trip_id: tripId, user_id: userId });
+
+      if (existing) {
+        await wishlistStorage.delete({ trip_id: tripId, user_id: userId });
+        return res.json({ success: true, action: "removed" });
+      } else {
+        await wishlistStorage.create({ trip_id: tripId, user_id: userId });
+        return res.json({ success: true, action: "added" });
+      }
     } catch (err: any) {
       console.error(err);
-      res.status(500).json({ error: "Failed to add trip to wishlist", details: err.message });
+      res.status(500).json({ error: "Failed to toggle wishlist", details: err.message });
     }
   };
+
 
   public getWishlistedTripsHandler = async (req: Request, res: Response) => {
     try {

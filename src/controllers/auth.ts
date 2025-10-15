@@ -261,6 +261,48 @@ export class Auth {
     }
   };
 
+  logout = async (req: Request, res: Response) => {
+    try {
+      const userId = new ObjectId((req as any).user.userId);
+      const { refresh_token, platform_id } = req.body;
+
+      if (!refresh_token) {
+        return res.status(400).json({ error: "Missing refresh_token" });
+      }
+
+      const refreshTokensColl = this.db.collection<IAuthRefreshToken>("auth_refresh_tokens");
+      const accessTokensColl = this.db.collection<IAuthAccessToken>("auth_access_tokens");
+
+      // Find the refresh token
+      const refreshDoc = await refreshTokensColl.findOne({
+        user_id: userId,
+        refresh_token,
+        platform_id: platform_id ? new ObjectId(platform_id) : null,
+        status: TokenStatus.ACTIVE,
+      });
+
+      if (!refreshDoc) {
+        return res.status(404).json({ error: "Refresh token not found or already logged out" });
+      }
+
+      // Invalidate both tokens (delete or mark inactive)
+      await refreshTokensColl.updateOne(
+        { _id: refreshDoc._id },
+        { $set: { status: TokenStatus.INACTIVE, modified_at: new Date() } }
+      );
+
+      await accessTokensColl.updateMany(
+        { refresh_id: refreshDoc._id },
+        { $set: { status: TokenStatus.INACTIVE, modified_at: new Date() } }
+      );
+
+      return res.status(200).json({ message: "Logout successful" });
+    } catch (err: any) {
+      console.error(err);
+      res.status(500).json({ error: "Logout failed", details: err.message });
+    }
+  };
+
 
   resendOtp = async (req: Request, res: Response) => {
     try {

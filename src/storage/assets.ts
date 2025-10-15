@@ -1,5 +1,5 @@
 import { Db, ObjectId, WithId } from "mongodb";
-import { IAsset } from "../models/assets";
+import { AssetCategory, IAsset } from "../models/assets";
 
 export class AssetStorage {
   private db: Db;
@@ -19,6 +19,66 @@ export class AssetStorage {
     if (options?.sort) cursor.sort(options.sort);
 
     return cursor.toArray();
+  }
+
+   public async getPriceRangesByLocation(location: string): Promise<
+    { category: AssetCategory; minPrice: number; maxPrice: number }[]
+  > {
+    const pipeline = [
+      { $match: { "location.place_name": { $regex: location, $options: "i" }, is_deleted: false } },
+      {
+        $group: {
+          _id: "$category",
+          minPrice: { $min: "$price" },
+          maxPrice: { $max: "$price" },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ];
+
+    const results = await this.db.collection<IAsset>(this.collectionName).aggregate(pipeline).toArray();
+
+    return results.map(r => ({
+      category: r._id,
+      minPrice: r.minPrice,
+      maxPrice: r.maxPrice,
+    }));
+  }
+
+  public async getMinPricesForStayAndTransport(location: string): Promise<{
+    stayMinPrice: number | null;
+    transportMinPrice: number | null;
+  }> {
+    const pipeline = [
+      {
+        $match: {
+          "location.place_name": { $regex: location, $options: "i" },
+          is_deleted: false,
+          category: { $in: [AssetCategory.STAY, AssetCategory.TRANSPORT] },
+        },
+      },
+      {
+        $group: {
+          _id: "$category",
+          minPrice: { $min: "$price" },
+        },
+      },
+    ];
+
+    const results = await this.db.collection<IAsset>(this.collectionName).aggregate(pipeline).toArray();
+
+    // Initialize defaults
+    const output = {
+      stayMinPrice: null,
+      transportMinPrice: null,
+    };
+
+    results.forEach(r => {
+      if (r._id === AssetCategory.STAY) output.stayMinPrice = r.minPrice;
+      if (r._id === AssetCategory.TRANSPORT) output.transportMinPrice = r.minPrice;
+    });
+
+    return output;
   }
 
   // Get single asset by ID

@@ -8,6 +8,7 @@ export const auth = (db: any) => {
   const authController = new Auth(db);
 
   router.post("/refresh", refreshValidator, validate, authController.refresh);
+  router.post("/logout", refreshValidator, validate, authController.logout);
   router.post("/otp/send", sendOtpValidator, validate, authController.sendOtp);
   router.post("/otp/resend", resendOtpValidator, validate, authController.resendOtp);
   router.post("/otp/login", otpLoginValidator, validate, authController.otpLogin);
