@@ -3,6 +3,7 @@ import { QuotationStorage } from "../storage/quotation";
 import { Db, ObjectId } from "mongodb";
 import { IQuotation, QuotationStatus } from "../models/quotation";
 import { UserRole } from "../types/enum";
+import { TripStorage } from "../storage/trip";
 
 export class QuotationController {
     private db: Db;
@@ -15,33 +16,58 @@ export class QuotationController {
 
     public createQuotation = async (req: Request, res: Response) => {
         try {
-            const userId = (req as any).user.userId;
-            const userRole = (req as any).user.role;
+            const user = (req as any).user;
+            const userId = user.userId;
+            const userRole = user.role;
 
-            // Decide initial quotation status based on role
+            const tripStorage = new TripStorage(this.db);
+            const trip = await tripStorage.getTripById(req.body.trip_id);
+            if (!trip) {
+                return res.status(404).json({ error: 'Trip not found' });
+            }
+
+            // Determine quotation status based on user role
             let status: QuotationStatus;
+            let tripId = req.body.trip_id; // default to existing trip_id
+
             if (userRole === UserRole.VENDOR) {
                 status = QuotationStatus.QUOTE_IN_PROGRESS;
             } else {
                 status = QuotationStatus.REQUESTED;
+                // If current user is not the trip creator, create a duplicate under their ID
+                if (userId !== trip.creator?.toString()) {
+                    const newTrip = await tripStorage.create({
+                        ...trip,
+                        _id: undefined,
+                        creator: userId,
+                        user_id: userId,
+                        created_at: new Date(),
+                    });
+
+                    tripId = newTrip._id; // use new trip’s ID for quotation
+                }
             }
 
-            // Convert IDs to ObjectId
+            // Prepare quotation data
             const data: IQuotation = {
                 ...req.body,
-                trip_id: new ObjectId(req.body.trip_id),
-                creator: new ObjectId(userId),
+                trip_id: new ObjectId(tripId),
+                creator: trip.creator,
                 user_id: new ObjectId(userId),
+                created_at: new Date(),
                 status,
             };
-            // Create quotation
-            const quotation: IQuotation = await this.storage.create(data);
 
-            res.status(200).json({ _id: quotation._id });
+            // Create quotation
+            const quotation = await this.storage.create(data);
+
+            return res.status(200).json({ _id: quotation._id });
         } catch (err: any) {
-            res.status(400).json({ error: err.message });
+            return res.status(400).json({ error: err.message });
         }
     };
+
+
 
     public quoteOrRejectQuotation = async (req: Request, res: Response) => {
         try {
@@ -66,7 +92,6 @@ export class QuotationController {
             const newQuotation: IQuotation = {
                 ...original,
                 _id: undefined,
-                creator: new ObjectId(userId),
                 user_id: new ObjectId(userId),
                 status,
                 created_at: new Date(),
@@ -85,7 +110,7 @@ export class QuotationController {
     public getUserQuotations = async (req: Request, res: Response) => {
         try {
             const userId = (req as any).user.userId;
-            const quotations = await this.storage.getAllByUser(userId);
+            const quotations = await this.storage.getQuotations(userId);
             res.json(quotations);
         } catch (err: any) {
             res.status(500).json({ error: err.message });

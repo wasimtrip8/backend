@@ -20,7 +20,8 @@ export class Trip {
   public generateItineraryHandler = async (req: Request, res: Response) => {
     try {
       const userData: ITrip = req.body;
-      const itineraries = await Helper.generateItinerary(this.db, userData);
+      const user = req.user;
+      const itineraries = await Helper.generateItinerary(this.db, userData, user);
       return res.status(200).json(itineraries);
     } catch (err: any) {
       console.error(err);
@@ -172,45 +173,23 @@ export class Trip {
       });
     }
   };
-
   public myCreatedTripsHandler = async (req: Request, res: Response) => {
     try {
       const { page, limit, skip } = parsePagination(req.query);
       const userId = (req as any).user.userId;
-
-      const quotationStorage = new QuotationStorage(this.db);
       const tripStorage = new TripStorage(this.db);
 
-      // 1️⃣ Get all quotations for this user
-      const quotations = await quotationStorage.getAllByUser(userId);
-      // 2️⃣ Extract unique trip IDs safely
-      const tripIds = Array.from(
-        new Set(
-          quotations
-            .map((q) => q.trip_id)
-            .filter((id) => id != null)
-            .map((id) => id!.toString())
-        )
-      ).map((id) => new ObjectId(id));
+      // Fetch trips created by the logged-in user
+      const filter = { creator: new ObjectId(userId) };
 
-      if (tripIds.length === 0) {
-        return res.json({
-          data: [],
-          page,
-          limit,
-          total: 0,
-          totalPages: 0,
-        });
-      }
+      const trips = await tripStorage.find(filter, {
+        skip,
+        limit,
+        sort: { created_at: -1 },
+      });
 
-      // 3️⃣ Fetch trips
-      const trips = await tripStorage.find(
-        { _id: { $in: tripIds } },
-        { skip, limit, sort: { created_at: -1 } }
-      );
-      const total = await tripStorage.count({ _id: { $in: tripIds } });
+      const total = await tripStorage.count(filter);
 
-      // 4️⃣ Return paginated response
       res.json({
         data: trips,
         page,

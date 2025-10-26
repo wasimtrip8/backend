@@ -18,10 +18,46 @@ export class QuotationStorage {
     return { ...data, _id: result.insertedId } as WithId<IQuotation>;
   }
 
-  public async getAllByUser(user_id: string | ObjectId): Promise<WithId<IQuotation>[]> {
+  public async getQuotations(user_id: string | ObjectId): Promise<any[]> {
     const _id = typeof user_id === "string" ? new ObjectId(user_id) : user_id;
-    return this.db.collection<IQuotation>(this.collectionName).find({ user_id: _id, is_deleted: false }).toArray();
+
+    return this.db.collection<IQuotation>(this.collectionName)
+      .aggregate([
+        {
+          $match: {
+            $or: [
+              { creator: _id },
+              { user_id: _id },
+            ],
+            is_deleted: false
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "user_id",
+            foreignField: "_id",
+            as: "user",
+          },
+        },
+        {
+          $unwind: {
+            path: "$user",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $project: {
+            "user.password": 0, // exclude sensitive info
+          },
+        },
+        {
+          $sort: { created_at: -1 },
+        },
+      ])
+      .toArray();
   }
+
 
   // In QuotationStorage
   public async getVendorTripIdsByStatus(
@@ -65,16 +101,45 @@ export class QuotationStorage {
       .map((id) => (typeof id === "string" ? new ObjectId(id) : id));
   }
 
-
-
-
-  public async getById(id: string | ObjectId, user_id?: string | ObjectId): Promise<WithId<IQuotation> | null> {
+  public async getById(
+    id: string | ObjectId,
+    user_id?: string | ObjectId
+  ): Promise<any | null> {
     const _id = typeof id === "string" ? new ObjectId(id) : id;
-    const filter: any = { _id, is_deleted: false };
-    if (user_id) filter.user_id = typeof user_id === "string" ? new ObjectId(user_id) : user_id;
+    const match: any = { _id, is_deleted: false };
 
-    return this.db.collection<IQuotation>(this.collectionName).findOne(filter);
+    if (user_id) {
+      match.user_id = typeof user_id === "string" ? new ObjectId(user_id) : user_id;
+    }
+
+    const result = await this.db.collection<IQuotation>(this.collectionName)
+      .aggregate([
+        { $match: match },
+        {
+          $lookup: {
+            from: "users",
+            localField: "user_id",
+            foreignField: "_id",
+            as: "user",
+          },
+        },
+        {
+          $unwind: {
+            path: "$user",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $project: {
+            "user.password": 0, // exclude sensitive info
+          },
+        },
+      ])
+      .toArray();
+
+    return result[0] || null; // return single document or null
   }
+
 
   public async deleteById(id: string | ObjectId, user_id?: string | ObjectId): Promise<boolean> {
     const _id = typeof id === "string" ? new ObjectId(id) : id;

@@ -14,7 +14,7 @@ export class Helper {
   }
 
   // Static core logic
-  public static async generateItinerary(db: Db, userData: ITrip): Promise<IItinerary> {
+  public static async generateItinerary(db: Db, userData: ITrip, user: any): Promise<IItinerary> {
     const prompt = formatPromptForItineraryCreation(userData);
     const response = await callOpenAI(prompt);
     const formattedItinerary = extractTextFromOpenAI(response);
@@ -23,7 +23,7 @@ export class Helper {
     const itineraries = await itineraryStorage.create(formattedItinerary);
 
     const tripStorage = new TripStorage(db);
-    await tripStorage.create({ ...userData, itineraries });
+    await tripStorage.create({ ...userData, creator: user._id, user_id: user._id, itineraries });
 
     return { _id: itineraries._id };
   }

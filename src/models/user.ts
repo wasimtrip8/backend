@@ -7,6 +7,7 @@ export interface IUser {
   name: string;
   mobile?: string;
   mobile_verified: boolean;
+  description?: string;
   email?: string;
   email_verified: boolean;
   google_id?: string | null;

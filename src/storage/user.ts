@@ -30,7 +30,7 @@ export class UserStorage {
         );
 
         if (!result) {
-            throw new Error("No matching trip found to update");
+            throw new Error("No matching user found to update");
         }
 
         return result;

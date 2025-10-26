@@ -8,6 +8,8 @@ export const quotation = (db: any) => {
   const router = express.Router();
   const controller = new QuotationController(db);
 
+    router.get("/", authenticateJWT, controller.getUserQuotations);
+
   router.post(
     "/", authenticateJWT,
     createQuotationValidator,
@@ -16,7 +18,7 @@ export const quotation = (db: any) => {
   router.post("/quote/:id", authenticateJWT, authorizeRoles([UserRole.VENDOR]), controller.quoteOrRejectQuotation);
   router.post("/reject/:id", authenticateJWT, authorizeRoles([UserRole.VENDOR]), controller.quoteOrRejectQuotation);
 
-  router.get("/", authenticateJWT, controller.getUserQuotations);
+
   router.get("/:id", authenticateJWT, controller.getQuotationById);
   router.delete("/:id", authenticateJWT, controller.deleteQuotationById);
 
