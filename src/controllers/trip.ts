@@ -23,9 +23,10 @@ export class Trip {
       const userData: ITrip = req.body;
       const user = req.user;
       const itineraries = await Helper.generateItinerary(this.db, userData, user);
-       const unsplashClient = new UnsplashClient();
-      const banner = await unsplashClient.searchImage(userData?.destination as string);
-      return res.status(200).json({...itineraries, banner});
+      const query = `${userData?.destination || ''}${Array.isArray(userData?.trip_info?.places) && userData.trip_info.places.length ? ', ' + userData.trip_info.places.join(', ') : ''}`;
+      const unsplashClient = new UnsplashClient();
+      const banner = await unsplashClient.searchImage(query);
+      return res.status(200).json({ ...itineraries, banner });
     } catch (err: any) {
       console.error(err);
       return res.status(500).json({ error: "Failed to generate itinerary", details: err.message });
