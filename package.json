@@ -23,6 +23,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.20.0",
     "mongoose": "^8.18.2",
+    "twilio": "^5.10.3",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

@@ -10,7 +10,7 @@ import { IAuthAccessToken } from "../models/authAccessToken";
 import { IAuthRefreshToken } from "../models/authRefreshToken";
 import { IUser } from "../models/user";
 import { IVerification } from "../models/verification";
-import { error } from "console";
+import { sendSms } from "../clients/twilioClient";
 
 export class Auth {
   private db: Db;
@@ -185,7 +185,12 @@ export class Auth {
   };
 
   /** Helper to send OTP to a user */
-  private async sendOtpToUser(mobile_email: string, platform_id?: string, verification_type?: any, res?: Response) {
+  private async sendOtpToUser(
+    mobile_email: string,
+    platform_id?: string,
+    verification_type?: any,
+    res?: Response
+  ) {
     const verificationColl = this.db.collection<IVerification>("verification");
 
     const code = Math.floor(1000 + Math.random() * 9000).toString();
@@ -225,7 +230,14 @@ export class Auth {
       );
     }
 
-    return res?.status(200).json({ message: "OTP sent", sent: true, otp: code });
+    // --- Send OTP via Twilio SMS ---
+   try {
+    await sendSms(mobile_email, `Your OTP code is: ${code}`);
+  } catch (err) {
+     return res?.status(200).json({ message: "OTP sent",code:code, sent: true });
+    // return res?.status(500).json({ error: 'Failed to send OTP via SMS' });
+  }
+    return res?.status(200).json({ message: "OTP sent",code:code, sent: true });
   }
 
 
