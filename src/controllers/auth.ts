@@ -231,13 +231,13 @@ export class Auth {
     }
 
     // --- Send OTP via Twilio SMS ---
-   try {
-    await sendSms(mobile_email, `Your OTP code is: ${code}`);
-  } catch (err) {
-     return res?.status(200).json({ message: "OTP sent",code:code, sent: true });
-    // return res?.status(500).json({ error: 'Failed to send OTP via SMS' });
-  }
-    return res?.status(200).json({ message: "OTP sent",code:code, sent: true });
+    try {
+      await sendSms(mobile_email, `Your OTP code is: ${code}`);
+    } catch (err) {
+      return res?.status(200).json({ message: "OTP sent", code: code, sent: true });
+      // return res?.status(500).json({ error: 'Failed to send OTP via SMS' });
+    }
+    return res?.status(200).json({ message: "OTP sent", code: code, sent: true });
   }
 
 

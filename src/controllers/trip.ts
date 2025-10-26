@@ -8,6 +8,7 @@ import { QuotationStorage } from "../storage/quotation";
 import { UserRole } from "../types/enum";
 import { parsePagination } from "../utils/pagination";
 import { WishlistStorage } from "../storage/wishlist";
+import unsplashClient from "../clients/unsplashClient";
 
 export class Trip {
   private db: Db;
@@ -22,7 +23,8 @@ export class Trip {
       const userData: ITrip = req.body;
       const user = req.user;
       const itineraries = await Helper.generateItinerary(this.db, userData, user);
-      return res.status(200).json(itineraries);
+      const banner = await unsplashClient.searchUnsplashImage(userData?.destination as string);
+      return res.status(200).json({...itineraries, banner});
     } catch (err: any) {
       console.error(err);
       return res.status(500).json({ error: "Failed to generate itinerary", details: err.message });
