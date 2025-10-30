@@ -7,6 +7,7 @@ export const payments = (db: any) => {
 
   router.post("/orders", paymentsController.createOrder);
   router.post("/verify", paymentsController.verifyPayment);
+  router.post("/verify", paymentsController.webhook);
 
   return router;
 };

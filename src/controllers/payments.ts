@@ -59,4 +59,29 @@ export class Payments {
       res.status(500).json({ success: false, message: "Payment verification failed" });
     }
   };
+
+  webhook = async (req: Request, res: Response) => {
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET as string;
+    const signature = req.headers["x-razorpay-signature"] as string;
+
+    const shasum = crypto.createHmac("sha256", webhookSecret);
+    shasum.update(JSON.stringify(req.body));
+    const digest = shasum.digest("hex");
+
+    if (digest === signature) {
+      console.log("✅ Webhook verified:", req.body.event);
+
+      // handle specific event types
+      if (req.body.event === "payment.captured") {
+        const payment = req.body.payload.payment.entity;
+        // save payment info in DB
+        console.log("💰 Payment captured:", payment.id, payment.amount);
+      }
+
+      res.status(200).json({ status: "ok" });
+    } else {
+      console.warn("⚠️ Webhook signature mismatch");
+      res.status(400).json({ status: "invalid signature" });
+    }
+  };
 }
