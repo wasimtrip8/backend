@@ -114,12 +114,17 @@ export class Trip {
       const wishlistStorage = new WishlistStorage(this.db);
 
       const existing = await wishlistStorage.findOne({ trip_id: tripId, user_id: userId });
+      const tripStorage = new TripStorage(this.db);
+      const trip = await tripStorage.getTripById(tripId);
+       if (!trip) return res.status(404).json({ error: "Trip not found" });
 
       if (existing) {
         await wishlistStorage.delete({ trip_id: tripId, user_id: userId });
+        await tripStorage.updateTrip({wishlisted: false}, trip)
         return res.json({ success: true, action: "removed" });
       } else {
         await wishlistStorage.create({ trip_id: tripId, user_id: userId });
+        await tripStorage.updateTrip({wishlisted: true}, trip)
         return res.json({ success: true, action: "added" });
       }
     } catch (err: any) {

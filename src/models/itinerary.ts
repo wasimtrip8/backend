@@ -143,4 +143,5 @@ export interface ITrip {
   deleted_at?: Date;
   created_at?: Date;
   modified_at?: Date;
+  wishlisted?: boolean;
 }
