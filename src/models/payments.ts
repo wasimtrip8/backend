@@ -15,6 +15,8 @@ export enum PaymentStatus {
   CANCELLED = "CANCELLED",
   COMPLETED = "COMPLETED",
   REFUNDED = "REFUNDED",
+  AUTHORIZED = "AUTHORIZED",
+  SUCCESS = "SUCCESS"
 }
 
 export interface IRazorpayDetails {

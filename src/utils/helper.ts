@@ -47,4 +47,14 @@ export class Helper {
 
     return objectIds.length > 0 ? objectIds : null;
   }
+
+  public static generateBookingId(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let bookingId = '';
+    for (let i = 0; i < 12; i++) {
+      bookingId += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return bookingId;
+  }
 }
+
