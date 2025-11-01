@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "nodemon --watch src --exec ts-node src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",          // run compiled JS, not TS directly
+    "pm2:start": "pm2 start dist/server.js --name paralegal-backend",  // PM2 start command
+    "pm2:stop": "pm2 stop paralegal-backend",
+    "pm2:restart": "pm2 restart paralegal-backend"
   },
   "keywords": [],
   "author": "",
